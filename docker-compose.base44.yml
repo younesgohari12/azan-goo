@@ -1,0 +1,27 @@
+# Base44 sandbox stack for this project.
+# The repo is a static site: `index.html` is served straight from the bind mount,
+# so any edit is picked up immediately (the server always reads from disk).
+services:
+  web:
+    image: python:3.12-alpine
+    working_dir: /app
+    command:
+      - python
+      - -m
+      - http.server
+      - "3000"
+      - --bind
+      - 0.0.0.0
+      - --directory
+      - /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:3000/').status==200 else 1)"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 5s
