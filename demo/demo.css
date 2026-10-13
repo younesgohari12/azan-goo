@@ -1,0 +1,153 @@
+/* ==========================================================================
+   DEMO SCAFFOLDING — NOT PART OF THE DELIVERABLE
+   Plain, neutral styling for everything that is deliberately NOT redesigned
+   (title, price, short description, variations, quantity, add-to-cart, tabs,
+   related products, header, footer). It exists only so the sandbox preview
+   shows the gallery in the context of a real single-product page.
+   ========================================================================== */
+
+:root {
+  --demo-line: #E4E4E1;
+  --demo-ink: #23211E;
+  --demo-ink-2: #6E6A64;
+  --demo-bg: #FFFFFF;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: #F6F5F3;
+  color: var(--demo-ink);
+  font-family: 'Vazirmatn', 'Tahoma', 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.9;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, p, ul, figure { margin: 0; }
+ul { padding: 0; list-style: none; }
+
+/* --- demo notice --------------------------------------------------------- */
+.demo-note {
+  padding: 10px 16px;
+  background-color: #23211E;
+  color: #F3F1ED;
+  font-size: .78rem;
+  text-align: center;
+}
+
+/* --- container ----------------------------------------------------------- */
+.demo-container {
+  max-width: 1220px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+/* --- header / footer ----------------------------------------------------- */
+.site-header {
+  background-color: var(--demo-bg);
+  border-bottom: 1px solid var(--demo-line);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-block: 16px;
+}
+
+.site-header__brand { font-weight: 700; font-size: 1.05rem; }
+
+.site-header__nav { display: flex; gap: 22px; font-size: .86rem; color: var(--demo-ink-2); }
+
+.site-footer {
+  margin-top: 60px;
+  padding-block: 28px;
+  background-color: var(--demo-bg);
+  border-top: 1px solid var(--demo-line);
+  font-size: .8rem;
+  color: var(--demo-ink-2);
+  text-align: center;
+}
+
+/* --- breadcrumb ---------------------------------------------------------- */
+.demo-breadcrumb {
+  padding-block: 18px;
+  font-size: .78rem;
+  color: var(--demo-ink-2);
+}
+
+.demo-breadcrumb a:hover { color: var(--demo-ink); }
+
+/* --- single product layout (untouched section) --------------------------- */
+.product-image-summary-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 34px;
+  align-items: start;
+}
+
+.summary h1 { font-size: 1.55rem; line-height: 1.6; }
+
+.summary .price {
+  display: block;
+  margin-block: 14px 18px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.summary .price del { color: var(--demo-ink-2); font-weight: 400; font-size: .9em; margin-inline-end: 8px; }
+
+.woocommerce-product-details__short-description {
+  color: var(--demo-ink-2);
+  font-size: .9rem;
+  padding-block-end: 18px;
+  border-bottom: 1px solid var(--demo-line);
+}
+
+.variations { width: 100%; margin-block: 18px; font-size: .88rem; border-collapse: collapse; }
+.variations th,
+.variations td { padding-block: 7px; text-align: start; border-bottom: 1px solid var(--demo-line); }
+.variations select { padding: 6px 10px; border: 1px solid var(--demo-line); border-radius: 8px; background: #fff; font: inherit; }
+
+.quantity { display: inline-flex; align-items: center; gap: 8px; margin-block: 18px 12px; }
+.quantity input { width: 74px; padding: 9px; border: 1px solid var(--demo-line); border-radius: 8px; font: inherit; text-align: center; }
+
+.single_add_to_cart_button {
+  display: inline-block;
+  padding: 12px 26px;
+  border: 0;
+  border-radius: 10px;
+  background-color: #23211E;
+  color: #fff;
+  font: inherit;
+  font-size: .92rem;
+  cursor: pointer;
+}
+
+.product_meta { margin-top: 20px; font-size: .78rem; color: var(--demo-ink-2); }
+
+/* --- tabs (untouched section) ------------------------------------------- */
+.woocommerce-tabs { margin-top: 56px; background-color: var(--demo-bg); border: 1px solid var(--demo-line); border-radius: 12px; overflow: hidden; }
+.woocommerce-tabs ul.tabs { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--demo-line); flex-wrap: wrap; }
+.woocommerce-tabs ul.tabs a { display: block; padding: 8px 14px; border-radius: 8px; font-size: .85rem; color: var(--demo-ink-2); }
+.woocommerce-tabs ul.tabs li.active a { background-color: #F1F0ED; color: var(--demo-ink); }
+.woocommerce-Tabs-panel { padding: 20px; font-size: .88rem; color: var(--demo-ink-2); }
+.woocommerce-Tabs-panel[hidden] { display: none; }
+
+/* --- related products (untouched section) ------------------------------- */
+.related { margin-top: 56px; }
+.related > h2 { font-size: 1.05rem; margin-bottom: 18px; }
+.products { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.products .product { background-color: var(--demo-bg); border: 1px solid var(--demo-line); border-radius: 12px; overflow: hidden; }
+.products .product img { display: block; width: 100%; background: #F1F0ED; }
+.products .product h3 { font-size: .84rem; font-weight: 500; padding: 12px 12px 4px; }
+.products .product .price { display: block; padding: 0 12px 14px; font-size: .82rem; color: var(--demo-ink-2); }
+
+@media (max-width: 1024px) {
+  .product-image-summary-inner { grid-template-columns: 1fr; gap: 26px; }
+  .products { grid-template-columns: repeat(2, 1fr); }
+}

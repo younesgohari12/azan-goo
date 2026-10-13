@@ -1,0 +1,379 @@
+/* ==========================================================================
+   تنست · Premium Warm-Minimal Product Gallery — WooCommerce + WoodMart
+   Persian (RTL) single-product image gallery · v1.0
+   --------------------------------------------------------------------------
+   SCOPE
+     Every rule is nested under
+         .single-product .woocommerce-product-gallery
+     i.e. ONLY the product image gallery of a single product page:
+         .product-images
+           └── .woocommerce-product-gallery
+                 ├── .wd-gallery-images   (hero carousel · Swiper)
+                 └── .wd-gallery-thumb    (thumbnail strip · Swiper, synced)
+
+     Nothing outside that subtree is styled. Product title, price, short
+     description, variations, quantity, add-to-cart, product tabs, related
+     products, header and footer keep their own styling untouched.
+
+   HOW IT WORKS — pure CSS, no JavaScript, no new library, no template override
+     The stylesheet only reads the state classes WoodMart itself writes, so
+     Swiper, the thumbnail sync, the theme zoom (ZoomImg) and the fullscreen /
+     “click to enlarge” trigger keep working exactly as before:
+         .wd-carousel-item.wd-active        current hero image (slideActiveClass)
+         .wd-carousel-item.wd-thumb-active  current thumbnail  (slideThumbActiveClass)
+         .wd-carousel.wd-initialized        carousel is ready
+         .image-action-zoom / .image-action-none   theme zoom on / off
+         .thumbs-position-bottom / -left / -right  theme thumbnail placement
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1 · Design tokens — warm ivory, deep green, a whisper of orange
+   ========================================================================== */
+.single-product .woocommerce-product-gallery {
+  /* surfaces */
+  --tsg-surface:   #FFFDFA;                        /* soft white             */
+  --tsg-surface-2: #F7F2EA;                        /* warm ivory inset       */
+
+  /* deep green accent */
+  --tsg-green:     #24503C;
+  --tsg-green-ink: #1C3F30;
+  --tsg-green-02:  rgba(36, 80, 60, .07);
+
+  /* refined hairlines */
+  --tsg-line:      rgba(36, 80, 60, .16);
+  --tsg-line-soft: rgba(36, 80, 60, .09);
+
+  /* the one small highlight */
+  --tsg-orange:    #E07B3C;
+
+  /* geometry */
+  --tsg-r:     18px;                               /* hero / panels          */
+  --tsg-r-sm:  14px;                               /* thumbnails             */
+  --tsg-r-out: 20px;                               /* gallery shell          */
+
+  /* elevation — soft and premium, never heavy */
+  --tsg-sh-sm:    0 6px 16px -12px rgba(36, 30, 24, .30);
+  --tsg-sh-hero:  0 26px 54px -38px rgba(36, 30, 24, .45);
+  --tsg-sh-shell: 0 34px 70px -52px rgba(36, 30, 24, .50);
+
+  /* motion */
+  --tsg-ease: cubic-bezier(.22, .61, .36, 1);
+
+  /* WoodMart's own hooks — keep the theme's numbers in sync with ours */
+  --wd-brd-radius:  var(--tsg-r);
+  --wd-gallery-gap: 12px;
+  --wd-arrow-width: 42px;
+  --wd-arrow-size:  42px;
+}
+
+
+/* ==========================================================================
+   2 · Gallery shell — soft-white card on the warm page
+   ========================================================================== */
+.single-product .woocommerce-product-gallery {
+  box-sizing: border-box;
+  padding: clamp(10px, 1.1vw, 16px);
+  background-color: var(--tsg-surface);
+  border: 1px solid var(--tsg-line);
+  border-radius: var(--tsg-r-out);
+  box-shadow: var(--tsg-sh-shell);
+}
+
+.single-product .woocommerce-product-gallery > * {
+  box-sizing: border-box;
+}
+
+
+/* ==========================================================================
+   3 · Hero image
+   ========================================================================== */
+.single-product .woocommerce-product-gallery .wd-gallery-images {
+  position: relative;
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-images .wd-carousel {
+  border-radius: var(--tsg-r);
+  background-color: var(--tsg-surface-2);
+  box-shadow: var(--tsg-sh-hero);
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-images .wd-carousel-item {
+  background-color: var(--tsg-surface-2);
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-images .woocommerce-product-gallery__image {
+  border-radius: var(--tsg-r);
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-images .woocommerce-product-gallery__image img {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  transform-origin: 50% 50%;
+}
+
+/* the theme's magnifier layer follows the hero's rounded corners */
+.single-product .woocommerce-product-gallery .wd-gallery-images .zoomImg {
+  border-radius: var(--tsg-r);
+}
+
+/* ---- smooth arrival of every hero image (pure CSS, no slide logic touched) */
+@keyframes tsg-image-in {
+  from { opacity: .55; }
+  to   { opacity: 1; }
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-images
+  .wd-carousel-item.wd-active .woocommerce-product-gallery__image img:not(.zoomImg) {
+  animation: tsg-image-in .5s var(--tsg-ease) both;
+}
+
+/* the outgoing / incoming neighbours sit a hair back, so the swap reads calm */
+.single-product .woocommerce-product-gallery .wd-gallery-images
+  .wd-carousel.wd-initialized .wd-carousel-item:not(.wd-active)
+  .woocommerce-product-gallery__image img:not(.zoomImg) {
+  opacity: .9;
+}
+
+/* ---- subtle hover zoom
+       Applied only when WoodMart's own zoom (ZoomImg magnifier) is OFF, so the
+       theme's zoom behaviour is never fought. Works in zoom mode too: the
+       magnifier simply keeps its own cursor and magnified layer.            */
+.single-product .woocommerce-product-gallery:not(.image-action-zoom) .wd-gallery-images
+  .wd-carousel-item .woocommerce-product-gallery__image img:not(.zoomImg) {
+  transition: transform .75s var(--tsg-ease);
+}
+
+.single-product .woocommerce-product-gallery:not(.image-action-zoom) .wd-gallery-images
+  .wd-carousel-item:hover .woocommerce-product-gallery__image img:not(.zoomImg) {
+  transform: scale(1.03);
+}
+
+.single-product .woocommerce-product-gallery.image-action-zoom .wd-gallery-images
+  .woocommerce-product-gallery__image img:not(.zoomImg) {
+  transition: opacity .45s var(--tsg-ease);
+}
+
+
+/* ==========================================================================
+   4 · Hero arrows (only the ones inside the image carousel)
+   ========================================================================== */
+.single-product .woocommerce-product-gallery .wd-gallery-images .wd-nav-arrows .wd-btn-arrow {
+  border-radius: 50%;
+  background-color: rgba(255, 253, 250, .94);
+  border: 1px solid var(--tsg-line);
+  box-shadow: var(--tsg-sh-sm);
+  color: var(--tsg-green-ink);
+  transition: background-color .3s var(--tsg-ease),
+              border-color .3s var(--tsg-ease),
+              color .3s var(--tsg-ease),
+              box-shadow .3s var(--tsg-ease),
+              opacity .3s var(--tsg-ease);
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-images .wd-nav-arrows .wd-btn-arrow:hover {
+  background-color: var(--tsg-green);
+  border-color: var(--tsg-green);
+  color: #FFFDFA;
+  box-shadow: 0 12px 24px -14px rgba(36, 80, 60, .70);
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-images .wd-nav-arrows .wd-btn-arrow.wd-disabled {
+  opacity: .32;
+  box-shadow: none;
+}
+
+
+/* ==========================================================================
+   5 · Fullscreen / zoom trigger  (WoodMart behaviour and markup untouched)
+   ========================================================================== */
+.single-product .woocommerce-product-gallery .product-additional-galleries {
+  padding: 14px;
+}
+
+.single-product .woocommerce-product-gallery .wd-show-product-gallery-wrap.wd-action-btn > a {
+  border-radius: var(--tsg-r-sm);
+  background-color: rgba(255, 253, 250, .96);
+  border: 1px solid var(--tsg-line);
+  box-shadow: var(--tsg-sh-sm);
+  color: var(--tsg-green-ink);
+  transition: background-color .3s var(--tsg-ease),
+              border-color .3s var(--tsg-ease),
+              color .3s var(--tsg-ease),
+              box-shadow .3s var(--tsg-ease);
+}
+
+.single-product .woocommerce-product-gallery .wd-show-product-gallery-wrap.wd-action-btn > a:hover {
+  background-color: var(--tsg-green);
+  border-color: var(--tsg-green);
+  color: #FFFDFA;
+  box-shadow: 0 14px 26px -14px rgba(36, 80, 60, .62);
+}
+
+.single-product .woocommerce-product-gallery .wd-show-product-gallery-wrap .wd-action-text {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+
+/* ==========================================================================
+   6 · Thumbnail strip — elegant, calm, unmistakable active state
+   ========================================================================== */
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel-item {
+  position: relative;
+  padding: 3px;
+  cursor: pointer;
+  opacity: .62;
+  transition: opacity .35s var(--tsg-ease);
+}
+
+/* very light thumbnail hover */
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel-item:hover {
+  opacity: .88;
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel-item img {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  background-color: var(--tsg-surface-2);
+  border: 1px solid var(--tsg-line-soft);
+  border-radius: var(--tsg-r-sm);
+  transition: border-color .35s var(--tsg-ease),
+              box-shadow .35s var(--tsg-ease);
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel-item:hover img {
+  border-color: var(--tsg-line);
+  box-shadow: 0 6px 14px -12px rgba(36, 30, 24, .50);
+}
+
+/* ---- active thumbnail: full strength, deep-green hairline + soft green halo */
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel-item.wd-thumb-active {
+  opacity: 1;
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel-item.wd-thumb-active img {
+  border-color: var(--tsg-green);
+  box-shadow: 0 0 0 3px var(--tsg-green-02),
+              0 10px 20px -16px rgba(36, 80, 60, .60);
+}
+
+/* ---- the single orange highlight: a 2px tick under the active thumbnail */
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel-item::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 0;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  inline-size: 0;
+  block-size: 2px;
+  border-radius: 2px;
+  background-color: var(--tsg-orange);
+  opacity: 0;
+  transition: inline-size .35s var(--tsg-ease), opacity .35s var(--tsg-ease);
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel-item.wd-thumb-active::after {
+  inline-size: 18px;
+  opacity: 1;
+}
+
+
+/* ==========================================================================
+   7 · Thumbnail arrows (smaller siblings of the hero arrows)
+   ========================================================================== */
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-nav-arrows {
+  --wd-arrow-width: 32px;
+  --wd-arrow-size: 32px;
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-nav-arrows .wd-btn-arrow {
+  border-radius: 50%;
+  background-color: rgba(255, 253, 250, .94);
+  border: 1px solid var(--tsg-line-soft);
+  box-shadow: var(--tsg-sh-sm);
+  color: var(--tsg-green-ink);
+  transition: background-color .3s var(--tsg-ease),
+              border-color .3s var(--tsg-ease),
+              color .3s var(--tsg-ease),
+              opacity .3s var(--tsg-ease);
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-nav-arrows .wd-btn-arrow:hover {
+  background-color: var(--tsg-green);
+  border-color: var(--tsg-green);
+  color: #FFFDFA;
+}
+
+.single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-nav-arrows .wd-btn-arrow.wd-disabled {
+  opacity: .32;
+}
+
+
+/* ==========================================================================
+   8 · Focus — the only other use of the orange
+   ========================================================================== */
+.single-product .woocommerce-product-gallery .wd-btn-arrow:focus-visible,
+.single-product .woocommerce-product-gallery .wd-show-product-gallery-wrap > a:focus-visible {
+  outline: 2px solid var(--tsg-orange);
+  outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   9 · Responsive — full-width hero, comfortable touch targets, no overflow
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .single-product .woocommerce-product-gallery {
+    --wd-arrow-width: 38px;
+    --wd-arrow-size: 38px;
+  }
+}
+
+@media (max-width: 768px) {
+  .single-product .woocommerce-product-gallery {
+    --tsg-r: 16px;
+    --tsg-r-sm: 12px;
+    --tsg-r-out: 18px;
+    --wd-gallery-gap: 10px;
+    --wd-arrow-width: 34px;
+    --wd-arrow-size: 34px;
+    padding: 6px;
+  }
+
+  /* arrows stay inside the hero, so nothing can push the layout sideways */
+  .single-product .woocommerce-product-gallery .wd-gallery-images .wd-nav-arrows.wd-pos-sep {
+    --wd-arrow-offset-h: 10px;
+  }
+
+  .single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-nav-arrows.wd-pos-sep {
+    --wd-arrow-offset-h: 6px;
+  }
+
+  /* comfortable, even touch targets on the thumbnail row */
+  .single-product .woocommerce-product-gallery .wd-gallery-thumb .wd-carousel-item {
+    padding: 3px 3px 6px;
+  }
+}
+
+
+/* ==========================================================================
+   10 · Motion preferences
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .single-product .woocommerce-product-gallery *,
+  .single-product .woocommerce-product-gallery *::before,
+  .single-product .woocommerce-product-gallery *::after {
+    animation: none !important;
+    transition-duration: .001ms !important;
+  }
+}

@@ -1,0 +1,207 @@
+/* ==========================================================================
+   DEMO SCAFFOLDING — NOT PART OF THE DELIVERABLE
+   --------------------------------------------------------------------------
+   Minimal emulation of WoodMart's gallery *base* styles (carousel layout,
+   arrows, action buttons). The sandbox has no WordPress/WoodMart install, so
+   the demo page needs these few declarations for the gallery to render the way
+   the real theme renders it. Values mirror WoodMart 8.6.x gallery partials.
+   On a real site WoodMart provides all of this — this file is never shipped.
+   ========================================================================== */
+
+/* --- gallery shell ------------------------------------------------------- */
+.woocommerce-product-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--wd-gallery-gap, 10px);
+}
+
+.woocommerce-product-gallery > * {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+
+.woocommerce-product-gallery .wd-carousel-inner {
+  position: relative;
+  margin: 0;
+}
+
+/* --- carousels ----------------------------------------------------------- */
+.wd-carousel {
+  --wd-gap: var(--wd-gallery-gap, 10px);
+  overflow: hidden;
+}
+
+.wd-carousel-wrap {
+  display: flex;
+  width: 100%;
+  transition: transform .45s cubic-bezier(.22, .61, .36, 1);
+}
+
+.wd-carousel-item {
+  flex: 0 0 auto;
+  width: calc(100% / var(--wd-col-lg, 1));
+  display: flex;
+  align-items: flex-start;
+}
+
+.wd-carousel-item > figure,
+.woocommerce-product-gallery__image {
+  width: 100%;
+  margin: 0;
+}
+
+.woocommerce-product-gallery__image a {
+  display: block;
+  line-height: 0;
+}
+
+.woocommerce-product-gallery .wd-carousel-item img {
+  width: 100%;
+  border-radius: var(--wd-brd-radius);
+}
+
+/* --- carousel arrows (WoodMart .wd-nav-arrows / .wd-btn-arrow) ----------- */
+.wd-nav-arrows {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.wd-nav-arrows.wd-pos-sep {
+  --wd-arrow-offset-h: calc(var(--wd-arrow-width, 50px) / -1);
+}
+
+.wd-btn-arrow {
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: var(--wd-arrow-width, 50px);
+  height: var(--wd-arrow-width, 50px);
+  margin-inline: var(--wd-arrow-offset-h, 0);
+  cursor: pointer;
+  transition: opacity .3s ease;
+}
+
+.wd-btn-arrow.wd-disabled {
+  opacity: .32;
+  cursor: default;
+}
+
+/* the theme draws this chevron from an icon font — emulated here with borders.
+   Physical borders keep the direction predictable in an RTL document:
+   “previous” lives on the right and points right, “next” on the left. */
+.wd-arrow-inner {
+  width: 9px;
+  height: 9px;
+  border-top: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+}
+
+.wd-prev .wd-arrow-inner { transform: rotate(135deg); }
+.wd-next .wd-arrow-inner { transform: rotate(-45deg); }
+
+/* --- sale badge (.product-labels) — theme base, deliberately NOT redesigned */
+.woocommerce-product-gallery .product-labels {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  top: 15px;
+  inset-inline-end: 15px;
+}
+
+.woocommerce-product-gallery .product-label.wd-shape-round {
+  display: grid;
+  place-items: center;
+  min-width: 55px;
+  min-height: 55px;
+  border-radius: 50%;
+  background-color: #FFFDFA;
+  color: #1C3F30;
+  font-size: .8rem;
+  font-weight: 700;
+  box-shadow: 0 6px 16px -12px rgba(36, 30, 24, .30);
+}
+
+@media (max-width: 576px) {
+  .woocommerce-product-gallery .product-labels { top: 10px; inset-inline-end: 10px; }
+  .woocommerce-product-gallery .product-label.wd-shape-round { min-width: 40px; min-height: 40px; font-size: .72rem; }
+}
+
+/* --- enlarge trigger overlay (.product-additional-galleries) ------------- */
+.woocommerce-product-gallery .product-additional-galleries {
+  position: absolute;
+  bottom: 0;
+  inset-inline-start: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* --- icon buttons (.wd-action-btn / .wd-show-product-gallery-wrap) ------- */
+.wd-action-btn.wd-style-icon-bg-text {
+  --wd-action-icon-size: 18px;
+  --wd-action-h: calc(var(--wd-action-icon-size) * 2.8);
+  --wd-action-w: calc(var(--wd-action-icon-size) * 2.8);
+}
+
+.wd-action-btn.wd-style-icon-bg-text > a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  min-width: var(--wd-action-w);
+  text-decoration: none;
+}
+
+.wd-action-btn.wd-style-icon-bg-text .wd-action-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--wd-action-w);
+  height: var(--wd-action-h);
+}
+
+.wd-action-btn.wd-style-icon-bg-text .wd-action-text {
+  max-width: 0;
+  white-space: nowrap;
+  font-size: .9em;
+  transition: max-width .3s ease, padding .3s ease;
+}
+
+.wd-action-btn.wd-style-icon-bg-text > a:hover .wd-action-text {
+  padding-inline-end: calc(var(--wd-action-w) / 2);
+  max-width: 280px;
+}
+
+/* the theme draws this glyph from an icon font — emulated here with an SVG mask */
+.wd-show-product-gallery-wrap .wd-action-icon::before {
+  content: "";
+  inline-size: 18px;
+  block-size: 18px;
+  background-color: currentColor;
+  -webkit-mask: var(--tsg-demo-expand) center / contain no-repeat;
+  mask: var(--tsg-demo-expand) center / contain no-repeat;
+  --tsg-demo-expand: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M9%203H3v6'/%3E%3Cpath%20d='M21%2021v-6h-6'/%3E%3Cpath%20d='M3%203l7%207'/%3E%3Cpath%20d='M21%2021l-7-7'/%3E%3C/svg%3E");
+}
+
+@media (max-width: 1024px) {
+  .wd-action-btn.wd-style-icon-bg-text { --wd-action-icon-size: 16px; }
+}
+
+@media (max-width: 768.98px) {
+  .wd-carousel-item { width: calc(100% / var(--wd-col-sm, 1)); }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .wd-carousel-item { width: calc(100% / var(--wd-col-md, 1)); }
+}
