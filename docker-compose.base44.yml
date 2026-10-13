@@ -22,6 +22,7 @@ services:
       - ./index.html:/usr/share/nginx/html/index.html:ro
       - ./styles.css:/usr/share/nginx/html/styles.css:ro
       - ./product-page-ui.zip:/usr/share/nginx/html/product-page-ui.zip:ro
+      - ./product-page-full-project.zip:/usr/share/nginx/html/product-page-full-project.zip:ro
       - ./docker/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]

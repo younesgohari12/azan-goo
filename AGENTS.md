@@ -8,7 +8,9 @@ no framework and no backend** — this is deliberate and part of the brief.
 
 - `index.html` — the whole page (semantic HTML; product artwork is inline SVG).
 - `styles.css` — the whole design system (tokens → base → components → responsive).
-- `product-page-ui.zip` — the packaged deliverable (contains `index.html` + `styles.css`).
+- `product-page-ui.zip` — the packaged design deliverable (contains only `index.html` + `styles.css`).
+- `product-page-full-project.zip` — the same design plus this repo's own files (README, AGENTS.md,
+  compose, nginx config, `.base44/environment.json`). Both ZIPs are downloadable from the preview.
 - `docker/nginx.dev.conf` — dev nginx config used only by the sandbox.
 
 Because the deliverable must stay JavaScript-free, **all interactivity on the page is
