@@ -1,0 +1,31 @@
+# Base44 sandbox environment for this repository.
+#
+# The project is a static HTML + CSS prototype (no build step), so the compose
+# stack is a single nginx service serving the source files directly. Editing
+# index.html / styles.css and refreshing the preview reflects the change
+# immediately — nothing is baked into an image.
+#
+# Host port 3000 is the user-facing web entry point required by the sandbox.
+#
+# NOTE: the sandbox repository root is mode 0700, so nginx worker processes
+# (which run as the unprivileged `nginx` user) cannot traverse a bind-mounted
+# repository directory. The individual source files are mounted instead, which
+# keeps nginx unprivileged. When a new file has to be served, add a matching
+# volume entry below.
+services:
+  web:
+    image: nginx:alpine
+    restart: on-failure
+    ports:
+      - "3000:80"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./styles.css:/usr/share/nginx/html/styles.css:ro
+      - ./product-page-ui.zip:/usr/share/nginx/html/product-page-ui.zip:ro
+      - ./docker/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
