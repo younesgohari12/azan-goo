@@ -1,0 +1,27 @@
+{
+  "name": "orbit-wallet-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "رابط کاربری کیف پول Orbit — فرانت‌اند مستقل با دادهٔ نمونه (مرحلهٔ اول)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 3000",
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && rm -f orbit-wallet-ui.zip && { zip -rq orbit-wallet-ui.zip . -x 'node_modules/*' '.git/*' 'orbit-wallet-ui.zip' || python3 -m zipfile -c orbit-wallet-ui.zip $(ls -A | grep -v -E '^(node_modules|\\.git|orbit-wallet-ui\\.zip)$'); }"
+  },
+  "dependencies": {
+    "@fontsource/vazirmatn": "^5.0.0",
+    "framer-motion": "^11.0.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^5.5.0",
+    "vite": "^6.0.0"
+  }
+}

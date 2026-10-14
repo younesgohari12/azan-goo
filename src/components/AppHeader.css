@@ -1,0 +1,46 @@
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--bg);
+  padding-top: env(safe-area-inset-top);
+}
+
+.app-header__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: 8px var(--page-x) 10px;
+}
+
+.app-header__spacer,
+.app-header__aside {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.app-header__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.app-header__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.app-header__subtitle {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

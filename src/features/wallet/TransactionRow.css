@@ -1,0 +1,103 @@
+.tx-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: var(--radius-control);
+  text-align: start;
+  /* ردیف بزرگ نمی‌شود؛ فقط سطح و کنترل جزئیات تغییر می‌کند */
+  transition: background-color var(--dur-control) var(--ease-base);
+}
+
+.tx-row:hover,
+.tx-row:focus-visible {
+  background: var(--surface-hover);
+}
+
+.tx-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  margin-top: 2px;
+  border-radius: var(--radius-control);
+  background: var(--surface-muted);
+  color: var(--ink-2);
+}
+
+.tx-row__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tx-row__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tx-row__title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.tx-row__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 0.6875rem;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.tx-row__separator {
+  opacity: 0.6;
+}
+
+.tx-row__tail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tx-row__chevron {
+  display: inline-flex;
+  color: var(--ink-2);
+  opacity: 0;
+  transition: opacity var(--dur-control) var(--ease-base);
+}
+
+.tx-row:hover .tx-row__chevron,
+.tx-row:focus-visible .tx-row__chevron {
+  opacity: 1;
+}
+
+/* روی دستگاه‌های لمسی، کنترل جزئیات همیشه پیدا باشد */
+@media (hover: none) {
+  .tx-row__chevron {
+    opacity: 0.55;
+  }
+}
+
+@media (max-width: 380px) {
+  .tx-row__meta {
+    font-size: 0.625rem;
+  }
+
+  .tx-row {
+    gap: 9px;
+    padding: 10px 8px;
+  }
+}

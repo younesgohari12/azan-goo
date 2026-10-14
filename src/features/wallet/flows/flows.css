@@ -1,0 +1,389 @@
+.flow-step {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------------------------------- پیشرفت --------------------------------- */
+
+.flow-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px 12px;
+}
+
+.flow-progress__text {
+  font-size: 0.6875rem;
+  color: var(--ink-2);
+}
+
+.flow-progress__bars {
+  display: flex;
+  gap: 4px;
+}
+
+.flow-progress__bar {
+  width: 18px;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  transition: background-color var(--dur-panel) var(--ease-base);
+}
+
+.flow-progress__bar[data-done='true'] {
+  background: var(--accent);
+}
+
+/* ------------------------------ مبالغ پیشنهادی ----------------------------- */
+
+.amount-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.amount-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition:
+    background-color var(--dur-control) var(--ease-base),
+    border-color var(--dur-control) var(--ease-base),
+    transform var(--dur-feedback) var(--ease-base);
+}
+
+.amount-chip:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.amount-chip:active {
+  transform: scale(0.97);
+}
+
+.amount-chip[data-selected='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.amount-chip__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--accent);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--dur-feedback) var(--ease-base),
+    transform var(--dur-feedback) var(--ease-base);
+}
+
+.amount-chip[data-selected='true'] .amount-chip__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* -------------------------------- خلاصهٔ مبلغ ------------------------------ */
+
+.flow-amount-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface-muted);
+  border-radius: var(--radius-surface);
+}
+
+.flow-amount-summary__label {
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+}
+
+/* ---------------------------------- توضیح --------------------------------- */
+
+.note-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.note-field__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.note-field__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.note-field__counter {
+  font-size: 0.6875rem;
+  color: var(--ink-2);
+}
+
+.note-field__input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-field);
+  background: var(--surface);
+  font-size: 0.875rem;
+  line-height: 1.8;
+  resize: none;
+  outline: none;
+  transition:
+    border-color var(--dur-control) var(--ease-base),
+    box-shadow var(--dur-control) var(--ease-base);
+}
+
+.note-field__input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.note-field__input::placeholder {
+  color: var(--ink-2);
+  opacity: 0.7;
+}
+
+/* --------------------------------- پابرگ --------------------------------- */
+
+.flow-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px calc(var(--sheet-x) * -1) 0;
+  padding: 12px var(--sheet-x) calc(14px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.flow-footer__hint {
+  font-size: 0.6875rem;
+  color: var(--ink-2);
+}
+
+/* ---------------------------------- نتیجه --------------------------------- */
+
+.flow-result {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 8px;
+}
+
+.flow-result__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0 2px;
+  text-align: center;
+}
+
+.flow-result__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.flow-result__icon[data-status='success'] {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.flow-result__icon[data-status='pending'] {
+  background: var(--pending-soft);
+  color: var(--pending);
+}
+
+.flow-result__icon[data-status='failed'] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.flow-result__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.flow-result__title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.flow-result__description {
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  color: var(--ink-2);
+}
+
+/* ------------------------------ فهرست انتخاب ------------------------------ */
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.picker__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-field);
+  background: var(--surface);
+  color: var(--ink-2);
+  transition:
+    border-color var(--dur-control) var(--ease-base),
+    box-shadow var(--dur-control) var(--ease-base);
+}
+
+.picker__search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.picker__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  font-size: 0.875rem;
+  color: var(--ink);
+  outline: none;
+}
+
+.picker__input::placeholder {
+  color: var(--ink-2);
+  opacity: 0.8;
+}
+
+.picker__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.picker__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  text-align: start;
+  transition:
+    background-color var(--dur-control) var(--ease-base),
+    border-color var(--dur-control) var(--ease-base);
+}
+
+.picker__option:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.picker__option[data-selected='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.picker__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface-muted);
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.picker__option[data-selected='true'] .picker__avatar {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.picker__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.picker__name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker__meta {
+  /* dir="ltr" روی این قطعه است، پس تراز را دستی راست‌به‌چپ نگه می‌داریم */
+  text-align: right;
+  font-size: 0.6875rem;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--dur-feedback) var(--ease-base),
+    transform var(--dur-feedback) var(--ease-base);
+}
+
+.picker__option[data-selected='true'] .picker__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.picker__empty {
+  padding: 18px 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+}

@@ -1,0 +1,45 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.status-badge__label {
+  white-space: nowrap;
+}
+
+.status-badge--sm {
+  min-width: 5.75rem;
+  padding: 3px 9px;
+  font-size: 0.6875rem;
+}
+
+.status-badge--md {
+  min-width: 6.5rem;
+  padding: 5px 11px;
+  font-size: 0.8125rem;
+}
+
+.status-badge--success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.status-badge--pending {
+  background: var(--pending-soft);
+  color: var(--pending);
+}
+
+.status-badge--failed {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* فضای ثابت هنگام تعویض وضعیت */
+.status-badge-swap {
+  display: inline-flex;
+}

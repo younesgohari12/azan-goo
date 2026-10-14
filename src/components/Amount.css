@@ -1,0 +1,119 @@
+.amount {
+  display: inline-grid;
+  align-items: baseline;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.amount__layer {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.36em;
+  /* در RTL، شروع = لبهٔ راست؛ گروه عدد و واحد کنار هم می‌مانند */
+  justify-self: start;
+}
+
+.amount__ghost {
+  visibility: hidden;
+}
+
+.amount__num {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.06em;
+}
+
+.amount__sign {
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.amount__slot {
+  display: inline-grid;
+  justify-items: start;
+}
+
+.amount__slot > * {
+  grid-area: 1 / 1;
+}
+
+.amount__value,
+.amount__mask {
+  transition: opacity var(--dur-control) var(--ease-base);
+}
+
+.amount__mask {
+  opacity: 0;
+  letter-spacing: 0.06em;
+}
+
+.amount[data-hidden='true'] .amount__value {
+  opacity: 0;
+}
+
+.amount[data-hidden='true'] .amount__mask {
+  opacity: 1;
+}
+
+.amount__unit {
+  font-weight: 500;
+  color: var(--ink-2);
+  letter-spacing: 0.01em;
+}
+
+/* اندازه‌ها */
+.amount--hero .amount__value,
+.amount--hero .amount__mask {
+  font-size: 2.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.amount--hero .amount__unit {
+  font-size: 1rem;
+}
+
+.amount--lg .amount__value,
+.amount--lg .amount__mask {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+.amount--lg .amount__unit {
+  font-size: 0.8125rem;
+}
+
+.amount--md .amount__value,
+.amount--md .amount__mask {
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+.amount--md .amount__unit {
+  font-size: 0.75rem;
+}
+
+.amount--row .amount__value,
+.amount--row .amount__mask {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.amount--row .amount__unit {
+  font-size: 0.6875rem;
+}
+
+.amount--sm .amount__value,
+.amount--sm .amount__mask {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.amount--sm .amount__unit {
+  font-size: 0.6875rem;
+}
+
+.amount--muted .amount__value {
+  color: var(--ink-2);
+}
+
+.amount--muted .amount__sign {
+  color: var(--ink-2);
+}

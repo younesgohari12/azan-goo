@@ -1,0 +1,116 @@
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet--desktop {
+  align-items: center;
+}
+
+.sheet__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(41, 38, 46, 0.34);
+}
+
+.sheet__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface);
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  outline: none;
+}
+
+.sheet__panel[data-variant='auto'] {
+  max-height: 84vh;
+  max-height: min(84dvh, 640px);
+}
+
+.sheet__panel[data-variant='full'] {
+  height: 90vh;
+  height: min(90dvh, 760px);
+}
+
+.sheet__grabber {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+}
+
+.sheet__header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: calc(14px + env(safe-area-inset-top)) var(--sheet-x) 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet__header-spacer {
+  width: 40px;
+}
+
+.sheet__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sheet__subtitle {
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.sheet__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.sheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px var(--sheet-x) 0;
+}
+
+/* روی دسکتاپ: گفت‌وگوی مرکزی با سایهٔ لایهٔ شناور */
+.sheet--desktop .sheet__panel {
+  max-width: var(--sheet-max);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-float);
+}
+
+.sheet--desktop .sheet__panel[data-variant='full'] {
+  height: min(80dvh, 720px);
+}
+
+.sheet--desktop .sheet__grabber {
+  display: none;
+}
+
+.sheet--desktop .sheet__header {
+  padding-top: 12px;
+}
+
+@media (min-width: 480px) {
+  .sheet:not(.sheet--desktop) .sheet__panel {
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  }
+}

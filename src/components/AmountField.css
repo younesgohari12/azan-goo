@@ -1,0 +1,102 @@
+.amount-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.amount-field__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.amount-field__box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 13px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-field);
+  transition:
+    border-color var(--dur-control) var(--ease-base),
+    box-shadow var(--dur-control) var(--ease-base);
+}
+
+.amount-field__box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.amount-field__box[data-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.amount-field__box[data-invalid='true']:focus-within {
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+/* عنصر نامرئی برای اندازه‌گیری عرض متن (هم‌اندازهٔ ورودی) */
+.amount-field__measure {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  font-size: 1.4375rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  white-space: pre;
+}
+
+.amount-field__input {
+  flex: 0 0 auto;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  text-align: right;
+  font-size: 1.4375rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: transparent;
+}
+
+.amount-field__input::placeholder {
+  font-size: 1.4375rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  opacity: 0.6;
+}
+
+.amount-field__unit {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  opacity: 1;
+  transition: opacity var(--dur-control) var(--ease-base);
+}
+
+.amount-field__box[data-empty='true'] .amount-field__unit {
+  opacity: 0;
+}
+
+.amount-field__messages {
+  min-height: 1.25rem;
+}
+
+.amount-field__error,
+.amount-field__helper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.amount-field__error {
+  color: var(--danger);
+}
+
+.amount-field__helper {
+  color: var(--ink-2);
+}

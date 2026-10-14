@@ -1,0 +1,62 @@
+/**
+ * توکن‌های بصری کیف پول Orbit.
+ * پالت، شعاع، سایه و توکن‌های حرکت در یک جا نگه داشته می‌شوند تا کل کیف پول
+ * یک زبان طراحی واحد داشته باشد.
+ */
+:root {
+  color-scheme: light;
+
+  /* پالت پایه */
+  --bg: #faf8f5;
+  --surface: #ffffff;
+  --surface-muted: #f7f4f8;
+  --surface-hover: #f4f0f6;
+  --ink: #29262e;
+  --ink-2: #77717d;
+  --border: #e9e3ea;
+  --border-strong: #ded6e0;
+  --accent: #b700ff;
+  --accent-strong: #a300e6;
+  --accent-soft: #f2e7f8;
+  --on-accent: #ffffff;
+
+  /* رنگ وضعیت — محدود، همیشه همراه آیکون و متن */
+  --success: #17764a;
+  --success-soft: #e8f3ed;
+  --pending: #8a5a00;
+  --pending-soft: #fbf1dd;
+  --danger: #b3261e;
+  --danger-soft: #fbeae8;
+
+  /* شعاع */
+  --radius-control: 12px;
+  --radius-field: 14px;
+  --radius-surface: 16px;
+  --radius-panel: 22px;
+  --radius-pill: 999px;
+
+  /* سایه فقط برای لایهٔ شناور */
+  --shadow-float: 0 24px 48px -28px rgba(41, 38, 46, 0.32), 0 2px 10px -6px rgba(41, 38, 46, 0.14);
+
+  /* فاصله‌ها */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 28px;
+  --page-x: 18px;
+  --sheet-x: 18px;
+
+  /* توکن‌های حرکت */
+  --dur-feedback: 120ms;
+  --dur-control: 180ms;
+  --dur-panel: 250ms;
+  --ease-base: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* چیدمان */
+  --app-max: 560px;
+  --sheet-max: 460px;
+
+  --font-sans: 'Vazirmatn', 'Vazirmatn Variable', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+}

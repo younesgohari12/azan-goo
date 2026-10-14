@@ -1,0 +1,57 @@
+.balance-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 18px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-surface);
+}
+
+.balance-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.balance-card__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.balance-card__amount {
+  margin-top: -2px;
+}
+
+.balance-card__pending {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--pending-soft);
+  color: var(--pending);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.balance-card__pending-label {
+  color: var(--pending);
+}
+
+.balance-card__pending-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.balance-card__pending .amount__sign,
+.balance-card__pending .amount__unit {
+  color: inherit;
+}

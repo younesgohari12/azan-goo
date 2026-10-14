@@ -1,0 +1,6 @@
+.step-transition {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 8px;
+}
