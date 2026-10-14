@@ -60,3 +60,34 @@
 
   --font-sans: 'Vazirmatn', 'Vazirmatn Variable', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
 }
+
+/*
+ * تم تیره از همان توکن‌ها کنترل می‌شود تا برنامهٔ میزبان بتواند آن را تعیین کند:
+ *   document.documentElement.dataset.theme = 'dark'   // یا 'light'
+ * کیف پول صفحهٔ تنظیمات جدا ندارد؛ فقط توکن‌ها را عوض می‌کند.
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #17151a;
+  --surface: #201d24;
+  --surface-muted: #26222b;
+  --surface-hover: #2c2732;
+  --ink: #f3eff5;
+  --ink-2: #a49cab;
+  --border: #322c37;
+  --border-strong: #423a48;
+  --accent: #cf6bff;
+  --accent-strong: #dc92ff;
+  --accent-soft: #33243d;
+  --on-accent: #1b1220;
+
+  --success: #5ec394;
+  --success-soft: #1d2f26;
+  --pending: #e0b158;
+  --pending-soft: #322a19;
+  --danger: #f08a80;
+  --danger-soft: #38211f;
+
+  --shadow-float: 0 24px 48px -28px rgba(0, 0, 0, 0.72), 0 2px 10px -6px rgba(0, 0, 0, 0.5);
+}

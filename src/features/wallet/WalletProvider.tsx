@@ -1,13 +1,12 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { walletDisplayConfig, type WalletDisplayConfig } from '../../data/walletConfig'
+import { resolveDemoStatus, resolveInitialBalance, resolveShowTransactions } from '../../data/walletDemo'
 import { transferRecipients, walletSnapshot, withdrawDestinations } from '../../data/walletData'
+import { operationBalanceDelta, operationFee, type WalletOperation } from '../../data/walletRules'
 import type { Recipient, Transaction, WithdrawDestination } from '../../data/types'
 import { emitWalletEvent } from '../../host/hostBridge'
 
-export type WalletOperation =
-  | { type: 'topup'; amount: number }
-  | { type: 'transfer'; amount: number; recipient: Recipient; note?: string }
-  | { type: 'withdraw'; amount: number; destination: WithdrawDestination }
+export type { WalletOperation }
 
 interface WalletContextValue {
   balance: number
@@ -25,25 +24,21 @@ interface WalletContextValue {
 const WalletContext = createContext<WalletContextValue | null>(null)
 
 function makeReference(): string {
-  return `ORB-${Math.floor(10_000 + Math.random() * 89_999)}`
+  return `${walletDisplayConfig.referencePrefix}${Math.floor(10_000 + Math.random() * 89_999)}`
 }
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [balance, setBalance] = useState(walletSnapshot.balance)
-  const [transactions, setTransactions] = useState<Transaction[]>(walletSnapshot.transactions)
+  const [balance, setBalance] = useState(() => resolveInitialBalance(walletSnapshot.balance))
+  const [transactions, setTransactions] = useState<Transaction[]>(() =>
+    resolveShowTransactions() ? walletSnapshot.transactions : [],
+  )
   const [introPlayed, setIntroPlayed] = useState(false)
 
   const markIntroPlayed = useCallback(() => setIntroPlayed(true), [])
 
   const submitOperation = useCallback((operation: WalletOperation): Transaction => {
-    const fee =
-      operation.type === 'transfer'
-        ? walletDisplayConfig.fees.transfer
-        : operation.type === 'withdraw'
-          ? walletDisplayConfig.fees.withdraw
-          : walletDisplayConfig.fees.topup
-
-    const status = walletDisplayConfig.demoStatus[operation.type]
+    const status = resolveDemoStatus(operation.type)
+    const fee = operationFee(operation)
     const now = new Date().toISOString()
 
     let transaction: Transaction
@@ -60,7 +55,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         note: 'عملیات نمایشی این نسخه',
         demo: true,
       }
-      setBalance((current) => current + operation.amount)
     } else if (operation.type === 'transfer') {
       transaction = {
         id: `demo-${Date.now()}`,
@@ -75,7 +69,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         fee: fee || undefined,
         demo: true,
       }
-      setBalance((current) => current - (operation.amount + fee))
     } else {
       transaction = {
         id: `demo-${Date.now()}`,
@@ -87,10 +80,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         date: now,
         reference: makeReference(),
         fee: fee || undefined,
+        note: status === 'pending' ? 'در انتظار تسویهٔ بانکی' : undefined,
         demo: true,
       }
-      setBalance((current) => current - operation.amount)
     }
+
+    // موجودی فقط با همان قاعدهٔ نمونهٔ عملیات عوض می‌شود (نگاه کنید به walletRules)
+    const delta = operationBalanceDelta(operation, status)
+    if (delta !== 0) setBalance((current) => Math.max(current + delta, 0))
 
     setTransactions((current) => [transaction, ...current])
     emitWalletEvent({ type: operation.type, amount: operation.amount, status })

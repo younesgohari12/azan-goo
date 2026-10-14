@@ -5,7 +5,8 @@ import type { Recipient, WalletSnapshot, WithdrawDestination } from './types'
  *
  * - تاریخ‌ها ISO هستند و هنگام نمایش به تقویم و ارقام فارسی تبدیل می‌شوند.
  * - مبالغ به تومان و علامت‌دارند: مثبت = ورودی، منفی = خروجی.
- * - فهرست تراکنش‌ها «فعالیت‌های اخیر» است، نه دفتر کل کامل.
+ * - فهرست تراکنش‌ها «فعالیت‌های اخیر» است، نه دفتر کل کامل (۱۳ مورد نمونه،
+ *   برای اینکه صفحه‌بندی محلی تاریخچه معنا داشته باشد).
  * - مجموع ورودی‌های در انتظار (۱۲۰٬۰۰۰ + ۲۳۰٬۰۰۰) با موجودی در انتظار هم‌خوان است.
  */
 export const walletSnapshot: WalletSnapshot = {
@@ -105,6 +106,48 @@ export const walletSnapshot: WalletSnapshot = {
       status: 'success',
       date: '2026-10-05T13:02:00+03:30',
       reference: 'ORB-47488',
+      note: 'بازگشت وجه خرید ناموفق',
+    },
+    {
+      id: 'tx-1032',
+      kind: 'transfer_out',
+      title: 'انتقال به علی صادقی',
+      counterparty: 'علی صادقی',
+      amount: -320_000,
+      status: 'success',
+      date: '2026-10-04T18:22:00+03:30',
+      reference: 'ORB-47355',
+      note: 'اجارهٔ پارکینگ',
+    },
+    {
+      id: 'tx-1031',
+      kind: 'topup',
+      title: 'افزایش اعتبار از درگاه بانکی',
+      amount: 300_000,
+      status: 'success',
+      date: '2026-10-02T09:10:00+03:30',
+      reference: 'ORB-47120',
+    },
+    {
+      id: 'tx-1030',
+      kind: 'withdraw',
+      title: 'برداشت به کارت بانک سامان',
+      counterparty: 'کارت بانک سامان',
+      amount: -150_000,
+      status: 'failed',
+      date: '2026-09-30T20:44:00+03:30',
+      reference: 'ORB-46988',
+      fee: 5_000,
+      note: 'کارت مقصد پذیرفته نشد',
+    },
+    {
+      id: 'tx-1029',
+      kind: 'refund',
+      title: 'بازگشت وجه خرید',
+      amount: 90_000,
+      status: 'success',
+      date: '2026-09-28T11:05:00+03:30',
+      reference: 'ORB-46710',
       note: 'بازگشت وجه خرید ناموفق',
     },
   ],

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { AppHeader } from '../../components/AppHeader'
+import { EmptyState } from '../../components/EmptyState'
 import { Icon } from '../../components/Icon'
 import { introContainer, introGroup } from '../../motion/variants'
 import type { OperationType } from '../../data/types'
@@ -13,7 +14,8 @@ import './HomeView.css'
 interface HomeViewProps {
   onOpenFlow: (type: OperationType) => void
   onOpenTransactions: () => void
-  onOpenTransaction: (id: string) => void
+  /** anchorY = فاصلهٔ بالای ردیف از دید کاربر */
+  onOpenTransaction: (id: string, anchorY: number) => void
   onBack: () => void
 }
 
@@ -61,13 +63,25 @@ export function HomeView({ onOpenFlow, onOpenTransactions, onOpenTransaction, on
           <h2 className="home__section-title" id="wallet-activity-title">
             فعالیت‌های اخیر
           </h2>
-          <button type="button" className="home__link" onClick={onOpenTransactions}>
-            همهٔ تراکنش‌ها
-            <Icon name="chevron-left" size={14} />
-          </button>
+          {recent.length > 0 ? (
+            <button type="button" className="home__link" onClick={onOpenTransactions}>
+              همهٔ تراکنش‌ها
+              <Icon name="chevron-left" size={14} />
+            </button>
+          ) : null}
         </div>
 
-        <TransactionList items={recent} onOpen={onOpenTransaction} />
+        {recent.length === 0 ? (
+          <EmptyState
+            icon="receipt"
+            title="هنوز تراکنشی ثبت نشده است."
+            description="اولین افزایش اعتبار یا انتقال، همین‌جا نمایش داده می‌شود."
+            actionLabel="افزایش اعتبار"
+            onAction={() => onOpenFlow('topup')}
+          />
+        ) : (
+          <TransactionList items={recent} onOpen={onOpenTransaction} />
+        )}
 
         <p className="home__note">داده‌ها و عملیات این نسخه نمایشی است.</p>
       </motion.section>

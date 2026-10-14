@@ -18,6 +18,8 @@ export type IconName =
   | 'user'
   | 'card'
   | 'receipt'
+  | 'copy'
+  | 'trash'
 
 /** آیکون‌های خطی یکدست روی شبکهٔ ۲۴ با ضخامت یکسان */
 const PATHS: Record<IconName, JSX.Element> = {
@@ -114,6 +116,21 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d="M6.2 3.6h11.6v16.8l-2.9-1.6-2.9 1.6-2.9-1.6-2.9 1.6V3.6Z" />
       <path d="M9.2 8.4h5.6" />
       <path d="M9.2 12.4h5.6" />
+    </>
+  ),
+  copy: (
+    <>
+      <rect x="8.6" y="8.6" width="10.8" height="10.8" rx="2.2" />
+      <path d="M15.4 5.6a2 2 0 0 0-2-2H6.6a2 2 0 0 0-2 2v6.8a2 2 0 0 0 2 2" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M4.6 6.8h14.8" />
+      <path d="M9.4 6.8V5.2a1.4 1.4 0 0 1 1.4-1.4h2.4a1.4 1.4 0 0 1 1.4 1.4v1.6" />
+      <path d="M6.6 6.8 7.5 19a1.6 1.6 0 0 0 1.6 1.5h5.8A1.6 1.6 0 0 0 16.5 19l.9-12.2" />
+      <path d="M10.4 10.6v6.2" />
+      <path d="M13.6 10.6v6.2" />
     </>
   ),
 }

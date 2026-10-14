@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { cx } from '../lib/cx'
 import './Button.css'
 
@@ -11,23 +11,20 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  fullWidth = false,
-  className,
-  children,
-  ...rest
-}: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = 'primary', size = 'md', fullWidth = false, className, children, ...rest },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       className={cx('btn', `btn--${variant}`, `btn--${size}`, fullWidth && 'btn--full', className)}
       {...rest}
     >
       {children}
     </button>
   )
-}
+})
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** برچسب دسترس‌پذیر (به‌عنوان tooltip هم استفاده می‌شود) */
@@ -36,9 +33,13 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-export function IconButton({ label, size = 'md', className, children, ...rest }: IconButtonProps) {
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
+  { label, size = 'md', className, children, ...rest },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       type="button"
       className={cx('icon-btn', `icon-btn--${size}`, className)}
       aria-label={label}
@@ -48,4 +49,4 @@ export function IconButton({ label, size = 'md', className, children, ...rest }:
       {children}
     </button>
   )
-}
+})

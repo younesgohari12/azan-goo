@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Amount } from '../../components/Amount'
+import { EmptyState } from '../../components/EmptyState'
 import { Icon } from '../../components/Icon'
 import { IconButton } from '../../components/Button'
 import { useAnimatedNumber } from '../../lib/useAnimatedNumber'
@@ -38,6 +39,15 @@ export function BalanceCard() {
           <span className="balance-card__pending-dot" aria-hidden="true" />
           <Amount value={pendingBalance} size="sm" unit sign="in" hidden={hidden} />
         </p>
+      ) : null}
+
+      {balance === 0 ? (
+        <EmptyState
+          variant="compact"
+          icon="wallet"
+          title="هنوز اعتباری در کیف پول نیست."
+          description="با «افزایش اعتبار» شروع کنید."
+        />
       ) : null}
     </section>
   )

@@ -15,12 +15,17 @@ import './WalletView.css'
 type WalletRouteName = 'home' | 'transactions'
 type SheetKind = 'topup' | 'transfer' | 'withdraw' | null
 
+interface DetailsTarget {
+  id: string
+  anchorY: number
+}
+
 export function WalletView() {
   const { transactions } = useWallet()
   const [routes, setRoutes] = useState<WalletRouteName[]>(['home'])
   const [direction, setDirection] = useState<1 | -1>(1)
   const [sheet, setSheet] = useState<SheetKind>(null)
-  const [detailsId, setDetailsId] = useState<string | null>(null)
+  const [details, setDetails] = useState<DetailsTarget | null>(null)
   const [backHint, setBackHint] = useState(false)
   const hintTimerRef = useRef<number | null>(null)
 
@@ -62,7 +67,11 @@ export function WalletView() {
 
   const closeSheet = useCallback(() => setSheet(null), [])
 
-  const details = detailsId ? (transactions.find((item) => item.id === detailsId) ?? null) : null
+  const openDetails = useCallback((id: string, anchorY: number) => setDetails({ id, anchorY }), [])
+
+  const detailsTransaction = details
+    ? (transactions.find((item) => item.id === details.id) ?? null)
+    : null
 
   return (
     <div className="wallet">
@@ -80,10 +89,10 @@ export function WalletView() {
               onBack={handleHomeBack}
               onOpenFlow={(type: OperationType) => setSheet(type)}
               onOpenTransactions={() => push('transactions')}
-              onOpenTransaction={setDetailsId}
+              onOpenTransaction={openDetails}
             />
           ) : (
-            <TransactionsView onBack={pop} onOpenTransaction={setDetailsId} />
+            <TransactionsView onBack={pop} onOpenTransaction={openDetails} />
           )}
         </motion.div>
       </AnimatePresence>
@@ -106,7 +115,11 @@ export function WalletView() {
       <TopUpFlow open={sheet === 'topup'} onClose={closeSheet} onViewTransactions={openTransactions} />
       <TransferFlow open={sheet === 'transfer'} onClose={closeSheet} onViewTransactions={openTransactions} />
       <WithdrawFlow open={sheet === 'withdraw'} onClose={closeSheet} onViewTransactions={openTransactions} />
-      <TransactionDetailsSheet transaction={details} onClose={() => setDetailsId(null)} />
+      <TransactionDetailsSheet
+        transaction={detailsTransaction}
+        anchorY={details?.anchorY ?? null}
+        onClose={() => setDetails(null)}
+      />
     </div>
   )
 }

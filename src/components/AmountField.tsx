@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ChangeEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { feedbackTransition } from '../motion/variants'
 import { formatAmountInput, sanitizeAmountInput } from '../lib/format'
@@ -54,6 +54,11 @@ export function AmountField({
     const end = input.value.length
     input.setSelectionRange(end, end)
   }, [display])
+
+  // focus روی اولین فیلد مشکل‌دار؛ کاربر برای دیدن خطا جای دیگری نمی‌رود
+  useEffect(() => {
+    if (error) inputRef.current?.focus()
+  }, [error])
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     onValueChange(sanitizeAmountInput(event.target.value, maxDigits))

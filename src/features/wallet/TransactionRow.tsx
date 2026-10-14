@@ -15,7 +15,8 @@ const KIND_ICON: Record<TransactionKind, IconName> = {
 
 interface TransactionRowProps {
   item: Transaction
-  onOpen: (id: string) => void
+  /** anchorY = فاصلهٔ بالای ردیف از دید کاربر؛ رسید از همان‌جا باز می‌شود */
+  onOpen: (id: string, anchorY: number) => void
 }
 
 export function TransactionRow({ item, onOpen }: TransactionRowProps) {
@@ -23,7 +24,11 @@ export function TransactionRow({ item, onOpen }: TransactionRowProps) {
   const isOutgoing = item.amount < 0
 
   return (
-    <button type="button" className="tx-row" onClick={() => onOpen(item.id)}>
+    <button
+      type="button"
+      className="tx-row"
+      onClick={(event) => onOpen(item.id, event.currentTarget.getBoundingClientRect().top)}
+    >
       <span className="tx-row__icon" aria-hidden="true">
         <Icon name={KIND_ICON[item.kind]} size={18} />
       </span>

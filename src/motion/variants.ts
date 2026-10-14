@@ -56,6 +56,28 @@ export const sheetPanelDesktop: Variants = {
   exit: { opacity: 0, y: 10, scale: 0.99, transition: controlTransition },
 }
 
+/** دیالوگ تأیید: fade پس‌زمینه و scale حدود ۰٫۹۸ برای خود کارت */
+export const dialogPanelVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.98 },
+  visible: { opacity: 1, scale: 1, transition: panelTransition },
+  exit: { opacity: 0, scale: 0.99, transition: controlTransition },
+}
+
+/** ردیف‌های فهرست: ورود گروهی با stagger محدود */
+export function listRowVariants(staggerFrom: number | null): Variants {
+  return {
+    hidden: { opacity: 0, y: 6 },
+    visible: (index: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        ...controlTransition,
+        delay: staggerFrom === null ? 0 : Math.max(0, index - staggerFrom) * 0.05,
+      },
+    }),
+  }
+}
+
 export const scrimVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: controlTransition },
@@ -66,4 +88,10 @@ export const scrimVariants: Variants = {
 export const resultIcon: Variants = {
   hidden: { opacity: 0, scale: 0.86 },
   visible: { opacity: 1, scale: 1, transition: feedbackTransition },
+}
+
+/** ورود نتیجه: اول وضعیت، بعد رسید — یک‌بار و گروهی */
+export const resultContainer: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.04 } },
 }

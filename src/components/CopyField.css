@@ -1,0 +1,34 @@
+.copy-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-muted);
+}
+
+.copy-field__label {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  color: var(--ink-2);
+}
+
+.copy-field__value {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.copy-field__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn[data-copied='true'] {
+  color: var(--success);
+}

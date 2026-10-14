@@ -1,0 +1,122 @@
+.history-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-filters__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-field);
+  background: var(--surface);
+  color: var(--ink-2);
+  transition:
+    border-color var(--dur-control) var(--ease-base),
+    box-shadow var(--dur-control) var(--ease-base);
+}
+
+.history-filters__search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.history-filters__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  font-size: 0.875rem;
+  color: var(--ink);
+  outline: none;
+}
+
+.history-filters__input::placeholder {
+  color: var(--ink-2);
+  opacity: 0.8;
+}
+
+.history-filters__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.history-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition:
+    background-color var(--dur-control) var(--ease-base),
+    border-color var(--dur-control) var(--ease-base),
+    color var(--dur-control) var(--ease-base),
+    transform var(--dur-feedback) var(--ease-base);
+}
+
+.history-chip:hover {
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+
+.history-chip:active {
+  transform: scale(0.97);
+}
+
+.history-chip[data-selected='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.history-chip__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  color: var(--accent);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--dur-feedback) var(--ease-base),
+    transform var(--dur-feedback) var(--ease-base);
+}
+
+.history-chip[data-selected='true'] .history-chip__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.history-filters__clear {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  padding: 4px 8px;
+  margin-inline-start: -8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.6875rem;
+  color: var(--ink-2);
+  transition:
+    color var(--dur-control) var(--ease-base),
+    opacity var(--dur-control) var(--ease-base);
+}
+
+.history-filters__clear[data-visible='true']:hover {
+  color: var(--ink);
+}
+
+/* بدون فیلتر فعال، کنترل‌ها به وضعیت عادی برمی‌گردند */
+.history-filters__clear[data-visible='false'] {
+  opacity: 0;
+  pointer-events: none;
+}
