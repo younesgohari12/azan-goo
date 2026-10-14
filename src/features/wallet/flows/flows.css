@@ -432,7 +432,9 @@
     border-color var(--dur-control) var(--ease-base);
 }
 
-.picker__option:hover {
+/* :active معادل لمسی hover است؛ روی دستگاه‌های لمسی hover فعال نمی‌شود */
+.picker__option:hover,
+.picker__option:active {
   background: var(--surface-hover);
   border-color: var(--border-strong);
 }

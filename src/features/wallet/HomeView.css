@@ -34,7 +34,9 @@
   transition: color var(--dur-control) var(--ease-base);
 }
 
-.home__link:hover {
+/* :active معادل لمسی hover است؛ روی دستگاه‌های لمسی hover فعال نمی‌شود */
+.home__link:hover,
+.home__link:active {
   color: var(--accent-strong);
 }
 

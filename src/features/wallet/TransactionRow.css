@@ -10,8 +10,10 @@
   transition: background-color var(--dur-control) var(--ease-base);
 }
 
+/* :active معادل لمسی hover است؛ روی دستگاه‌های لمسی hover فعال نمی‌شود */
 .tx-row:hover,
-.tx-row:focus-visible {
+.tx-row:focus-visible,
+.tx-row:active {
   background: var(--surface-hover);
 }
 

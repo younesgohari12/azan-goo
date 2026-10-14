@@ -111,7 +111,9 @@
     opacity var(--dur-control) var(--ease-base);
 }
 
-.history-filters__clear[data-visible='true']:hover {
+/* :active معادل لمسی hover است؛ روی دستگاه‌های لمسی hover فعال نمی‌شود */
+.history-filters__clear[data-visible='true']:hover,
+.history-filters__clear[data-visible='true']:active {
   color: var(--ink);
 }
 
