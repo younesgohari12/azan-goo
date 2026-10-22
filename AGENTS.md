@@ -10,6 +10,18 @@ a service adapter and the repository ships one complete implementation of it, th
 in-memory mock (`src/adapters/mock`). Demo state lives in memory: a page reload
 resets the seed data (`createSeed()` in `src/adapters/mock/fixtures.ts`).
 
+## Restoring a conversation (adapter contract)
+
+A thread's activity, approval and result messages carry ids only (`taskId`,
+`approvalId`, `resultId`), and those cards render `null` when the entity behind the id
+is missing. So a conversation is restored with **one** adapter call,
+`getConversationSnapshot()` — messages plus the tasks, approvals, results and the
+annotations the feedback messages reference. The reducer merges them in with
+`mergeMissing`, which never overwrites an entity that live events already delivered.
+Loading messages alone fails silently: the seeded demo threads would show no activity
+block, no approval card, no result card and an empty "مراحل انجام کار" panel while
+raising no error.
+
 ## Running it (sandbox / local)
 
 ```bash

@@ -593,18 +593,21 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
       emit({ type: 'conversation:changed', conversationId, conversation: clone(conversation), reason: 'deleted' })
     },
 
-    async getMessages(conversationId) {
+    async getConversationSnapshot(conversationId) {
       await sleep(60)
-      return clone(
-        [...messages.values()]
-          .filter((message) => message.conversationId === conversationId)
-          .sort((a, b) => a.createdAt - b.createdAt),
-      )
-    },
+      const own = <T extends { conversationId: string }>(source: Map<string, T>): T[] =>
+        [...source.values()].filter((item) => item.conversationId === conversationId)
 
-    async getTasks(conversationId) {
-      await sleep(0)
-      return clone([...tasks.values()].filter((task) => task.conversationId === conversationId))
+      const conversationMessages = own(messages).sort((a, b) => a.createdAt - b.createdAt)
+      const referenced = new Set(conversationMessages.flatMap((message) => message.annotationIds ?? []))
+
+      return clone({
+        messages: conversationMessages,
+        tasks: own(tasks),
+        approvals: own(approvals),
+        results: own(results),
+        annotations: [...annotations.values()].filter((annotation) => referenced.has(annotation.id)),
+      })
     },
 
     async listModels() {

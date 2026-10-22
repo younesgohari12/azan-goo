@@ -107,7 +107,9 @@ export function buildZipArchive(files) {
     entry.writeUInt16LE(0, 32) // comment length
     entry.writeUInt16LE(0, 34) // disk number
     entry.writeUInt16LE(0, 36) // internal attributes
-    entry.writeUInt32LE(0o100644 << 16, 38) // external attributes (unix mode)
+    // `<<` yields a signed int32, and 0o100644 << 16 has the high bit set, so the
+    // result must be coerced back to unsigned before writeUInt32LE.
+    entry.writeUInt32LE((0o100644 << 16) >>> 0, 38) // external attributes (unix mode)
     entry.writeUInt32LE(offset, 42)
     central.push(entry, nameBuffer)
 

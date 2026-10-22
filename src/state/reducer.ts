@@ -1,11 +1,30 @@
 import type { AgentEvent } from '@/adapters/types'
-import type { Annotation, Attachment, Conversation, Message, PreviewDevice, PreviewRevision, TaskStep } from '@/types/model'
+import type {
+  ActionResult,
+  Annotation,
+  Approval,
+  Attachment,
+  Conversation,
+  Message,
+  PreviewDevice,
+  PreviewRevision,
+  Task,
+  TaskStep,
+} from '@/types/model'
 import { DEFAULT_PREVIEW_WIDTH, type ComposerState, type YAgentState } from './state'
 
 export type YAgentAction =
   | { type: 'booted'; conversations: Conversation[]; models: YAgentState['models'] }
   | { type: 'conversations:sync'; conversations: Conversation[] }
-  | { type: 'messages:loaded'; conversationId: string; messages: Message[] }
+  | {
+      type: 'conversation:loaded'
+      conversationId: string
+      messages: Message[]
+      tasks: Task[]
+      approvals: Approval[]
+      results: ActionResult[]
+      annotations: Annotation[]
+    }
   | { type: 'conversation:select'; conversationId: string }
   | { type: 'search:set'; query: string }
   | { type: 'sidebar:toggle' }
@@ -50,6 +69,18 @@ function withComposer(
 function mergeMessages(state: YAgentState, conversationId: string, update: (list: Message[]) => Message[]): YAgentState {
   const current = state.messagesByConversation[conversationId] ?? []
   return { ...state, messagesByConversation: { ...state.messagesByConversation, [conversationId]: update(current) } }
+}
+
+/**
+ * Adds restored entities that state does not know yet. Existing entries are kept
+ * untouched: a live event is always newer than a snapshot being loaded.
+ */
+function mergeMissing<T extends { id: string }>(current: Record<string, T>, items: T[]): Record<string, T> {
+  const next = { ...current }
+  items.forEach((item) => {
+    if (!next[item.id]) next[item.id] = item
+  })
+  return next
 }
 
 function mergeAnnotation(state: YAgentState, annotation: Annotation): YAgentState {
@@ -189,8 +220,15 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
     case 'conversations:sync':
       return { ...state, conversations: action.conversations }
 
-    case 'messages:loaded':
-      return { ...state, messagesByConversation: { ...state.messagesByConversation, [action.conversationId]: action.messages } }
+    case 'conversation:loaded':
+      return {
+        ...state,
+        messagesByConversation: { ...state.messagesByConversation, [action.conversationId]: action.messages },
+        tasks: mergeMissing(state.tasks, action.tasks),
+        approvals: mergeMissing(state.approvals, action.approvals),
+        results: mergeMissing(state.results, action.results),
+        annotations: mergeMissing(state.annotations, action.annotations),
+      }
 
     case 'conversation:select':
       return { ...state, activeConversationId: action.conversationId }

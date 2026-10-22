@@ -69,7 +69,8 @@ src/
 
 ```ts
 listConversations() / createConversation() / renameConversation() / setConversationPinned() / deleteConversation()
-getMessages(conversationId) / getTasks(conversationId) / listModels()
+getConversationSnapshot(conversationId)  // پیام‌ها + وظیفه، تأییدیه، نتیجه و علامت‌های ارجاع‌شده
+listModels()
 sendMessage({ conversationId, text, attachments, modelId })
 stopTask(conversationId)
 resolveApproval(approvalId, 'approve' | 'reject')

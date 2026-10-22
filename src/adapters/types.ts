@@ -33,8 +33,12 @@ export interface YAgentAdapter {
   setConversationPinned(conversationId: string, pinned: boolean): Promise<void>
   deleteConversation(conversationId: string): Promise<void>
 
-  getMessages(conversationId: string): Promise<Message[]>
-  getTasks(conversationId: string): Promise<Task[]>
+  /**
+   * Restores one conversation: its messages plus every entity those messages
+   * reference (see `ConversationSnapshot`). Loading the messages alone is not
+   * enough — the thread's activity, approval and result messages only carry ids.
+   */
+  getConversationSnapshot(conversationId: string): Promise<ConversationSnapshot>
   listModels(): Promise<AgentModel[]>
 
   sendMessage(input: SendMessageInput): Promise<void>
@@ -49,6 +53,20 @@ export interface YAgentAdapter {
   publishRevision(revisionId: string): Promise<void>
 
   subscribe(listener: AgentEventListener): () => void
+}
+
+/**
+ * Everything the interface needs to restore one conversation. A restored thread
+ * renders its activity, approval and result cards only if the adapter also
+ * returns the entities those messages point at — the messages carry ids alone.
+ */
+export interface ConversationSnapshot {
+  messages: Message[]
+  tasks: Task[]
+  approvals: Approval[]
+  results: ActionResult[]
+  /** Annotations referenced by the conversation's feedback messages. */
+  annotations: Annotation[]
 }
 
 export type ApprovalDecision = 'approve' | 'reject'

@@ -133,9 +133,9 @@ export function YAgentProvider({
     if (!activeConversationId) return
     let cancelled = false
     void (async () => {
-      const messages = await adapter.getMessages(activeConversationId)
+      const snapshot = await adapter.getConversationSnapshot(activeConversationId)
       if (cancelled) return
-      dispatch({ type: 'messages:loaded', conversationId: activeConversationId, messages })
+      dispatch({ type: 'conversation:loaded', conversationId: activeConversationId, ...snapshot })
     })()
     return () => {
       cancelled = true
