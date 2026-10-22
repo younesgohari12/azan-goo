@@ -5,26 +5,28 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-y-sm font-medium ' +
+  'inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-y-sm font-medium ' +
     'transition-[background-color,color,box-shadow,opacity] duration-y ease-y ' +
-    'disabled:pointer-events-none disabled:opacity-45 select-none',
+    // `opacity-45` is declared in the theme (the default scale has no 45).
+    'disabled:pointer-events-none disabled:opacity-45',
   {
     variants: {
       variant: {
-        primary: 'bg-y-accent text-white hover:bg-y-accent-hover shadow-y-soft',
-        secondary: 'bg-y-surface text-y-ink hover:bg-y-surface-hover border border-y-line',
+        // Filled states use the deeper accent so a white label keeps ≥4.5:1.
+        primary: 'bg-y-accent-strong text-white hover:bg-y-accent-strong-hover shadow-y-soft',
+        secondary: 'border border-y-line bg-y-surface text-y-ink hover:bg-y-surface-hover',
         outline: 'border border-y-line-strong bg-transparent text-y-ink hover:bg-y-surface-hover',
         ghost: 'bg-transparent text-y-ink-muted hover:bg-y-surface-hover hover:text-y-ink',
         success: 'bg-y-success text-[#062018] hover:brightness-105 shadow-y-soft',
-        danger: 'bg-y-danger-soft text-y-danger border border-y-danger/25 hover:bg-y-danger/20',
-        link: 'text-y-accent hover:text-y-accent-hover underline-offset-4 hover:underline px-0',
+        danger: 'border border-y-danger/35 bg-y-danger-soft text-y-danger hover:bg-y-danger/20',
+        link: 'px-0 text-y-accent underline-offset-4 hover:text-y-accent-hover hover:underline',
       },
       size: {
         sm: 'h-8 px-3 text-y-sm',
         md: 'h-9 px-3.5 text-y-base',
         lg: 'h-11 px-5 text-y-md',
-        icon: 'h-8 w-8',
-        'icon-sm': 'h-7 w-7',
+        icon: 'h-9 w-9',
+        'icon-sm': 'h-8 w-8',
         'icon-lg': 'h-10 w-10',
       },
       shape: {
@@ -57,10 +59,10 @@ export interface IconButtonProps extends Omit<ButtonProps, 'size' | 'shape'> {
 }
 
 const iconSizes: Record<NonNullable<IconButtonProps['size']>, string> = {
-  xs: 'h-7 w-7',
-  sm: 'h-8 w-8',
+  xs: 'h-8 w-8',
+  sm: 'h-9 w-9',
   md: 'h-9 w-9',
-  lg: 'h-10 w-10',
+  lg: 'h-11 w-11',
 }
 
 /** Square, quiet icon control used across the toolbar, sidebar and composer. */

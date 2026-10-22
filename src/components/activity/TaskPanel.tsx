@@ -12,11 +12,14 @@ import { cn, fa, formatElapsed } from '@/lib/utils'
 import { useYAgent } from '@/state/YAgentProvider'
 
 /**
- * "مراحل انجام کار" — the plan of the current request.
+ * "مراحل انجام کار" — the plan of the current request, with the feedback notes
+ * in the second tab.
+ *
  * Step order and count come from the adapter; the progress percentage is
- * computed from the real step states (no cosmetic completion).
+ * computed from the real step states (no cosmetic completion). The header is
+ * hidden when the panel is hosted in a drawer that already shows the title.
  */
-export function TaskPanel({ onCollapse }: { onCollapse?: () => void }) {
+export function TaskPanel({ onCollapse, hideHeader = false }: { onCollapse?: () => void; hideHeader?: boolean }) {
   const { state, actions, derived } = useYAgent()
   const task = derived.currentTask
   const live = task ? task.status === 'running' || task.status === 'queued' : false
@@ -26,20 +29,23 @@ export function TaskPanel({ onCollapse }: { onCollapse?: () => void }) {
   const tab = state.panelTab
 
   return (
-    <div className="flex h-full w-full flex-col bg-y-bg-elevated">
-      <header className="flex items-center gap-2 border-b border-y-line px-3 py-3">
-        <ListChecks className="h-4 w-4 shrink-0 text-y-accent" />
-        <span className="flex-1 text-y-base font-medium text-y-ink">مراحل انجام کار</span>
-        {onCollapse ? (
-          <IconButton label="جمع‌کردن پنل" onClick={onCollapse}>
-            <PanelLeftClose className="h-4 w-4" />
-          </IconButton>
-        ) : null}
-      </header>
+    <div className="flex h-full min-h-0 w-full flex-col bg-y-bg-elevated">
+      {hideHeader ? null : (
+        <header className="flex shrink-0 items-center gap-2 border-b border-y-line px-3 py-2.5">
+          <ListChecks className="h-4 w-4 shrink-0 text-y-accent" />
+          <h2 className="min-w-0 flex-1 truncate text-y-base font-medium text-y-ink">مراحل انجام کار</h2>
+          {onCollapse ? (
+            <IconButton label="جمع‌کردن پنل مراحل" className="yagent-tap" onClick={onCollapse}>
+              <PanelLeftClose className="h-4 w-4" />
+            </IconButton>
+          ) : null}
+        </header>
+      )}
 
-      <div className="px-3 pt-3">
+      <div className="shrink-0 px-3 pt-3">
         <Segmented
           className="w-full [&>button]:flex-1"
+          label="نمای مراحل یا بازخورد"
           value={tab}
           onChange={(value) => actions.setPanel({ tab: value })}
           options={[
@@ -53,16 +59,19 @@ export function TaskPanel({ onCollapse }: { onCollapse?: () => void }) {
         />
       </div>
 
-      <div className="yagent-scroll flex-1 px-3 py-3.5">
+      <div className="yagent-scroll min-h-0 flex-1 px-3 py-3.5">
         {tab === 'feedback' ? (
           <FeedbackPanel />
         ) : task ? (
           <div className="space-y-3.5">
-            <div className="rounded-y-md border border-y-line bg-y-surface-soft/60 p-3">
+            <div className="rounded-y-md border border-y-line bg-y-surface-soft p-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate text-y-base font-medium text-y-ink">{task.title}</p>
-                  <p className="mt-0.5 text-y-xs text-y-ink-dim">شروع: {formatElapsed(Math.max(0, (task.endedAt ?? now) - task.startedAt))} پیش</p>
+                  <p className="text-y-base font-medium text-y-ink">{task.title}</p>
+                  <p className="mt-0.5 text-y-xs text-y-ink-dim">
+                    {task.endedAt ? 'پایان' : 'شروع'}: {formatElapsed(Math.max(0, (task.endedAt ?? now) - task.startedAt))}{' '}
+                    پیش
+                  </p>
                 </div>
                 <Badge
                   variant={
@@ -79,16 +88,14 @@ export function TaskPanel({ onCollapse }: { onCollapse?: () => void }) {
                 </Badge>
               </div>
 
-              <p className={cn('mt-2 text-y-sm leading-7', toneTextClass(TASK_STATUS_META[task.status].tone))}>
+              <p className={cn('mt-2 text-y-sm', toneTextClass(TASK_STATUS_META[task.status].tone))}>
                 {task.status === 'error' && task.error ? task.error : task.summary}
               </p>
 
               <div className="mt-3 flex items-center gap-2.5">
                 <ProgressBar
                   percent={derived.taskProgress.percent}
-                  tone={
-                    task.status === 'error' ? 'danger' : task.status === 'done' ? 'success' : 'accent'
-                  }
+                  tone={task.status === 'error' ? 'danger' : task.status === 'done' ? 'success' : 'accent'}
                 />
                 <span className="yagent-num shrink-0 text-y-xs text-y-ink-dim">
                   {fa(derived.taskProgress.done)} از {fa(derived.taskProgress.total)}
@@ -103,12 +110,12 @@ export function TaskPanel({ onCollapse }: { onCollapse?: () => void }) {
             </ol>
 
             {task.status === 'done' ? (
-              <p className="rounded-y-md border border-y-success/20 bg-y-success-soft/50 px-3 py-2 text-y-sm text-y-success">
+              <p className="rounded-y-md border border-y-success/25 bg-y-success-soft px-3 py-2 text-y-sm text-y-success">
                 همهٔ مراحل با موفقیت انجام شد.
               </p>
             ) : null}
             {task.status === 'stopped' ? (
-              <p className="rounded-y-md border border-y-line bg-y-surface-soft/60 px-3 py-2 text-y-sm text-y-ink-muted">
+              <p className="rounded-y-md border border-y-line bg-y-surface-soft px-3 py-2 text-y-sm text-y-ink-muted">
                 این کار متوقف شد. می‌توانی درخواست تازه‌ای بدهی یا از همین‌جا ادامه بدهی.
               </p>
             ) : null}
@@ -119,7 +126,7 @@ export function TaskPanel({ onCollapse }: { onCollapse?: () => void }) {
               <ListChecks className="h-4 w-4" />
             </span>
             <p className="text-y-base text-y-ink-muted">هنوز کاری در این گفتگو شروع نشده.</p>
-            <p className="text-y-xs leading-6 text-y-ink-dim">
+            <p className="text-y-xs text-y-ink-dim">
               وقتی درخواستی بفرستی، مراحل اجرای آن همین‌جا مرحله‌به‌مرحله نشان داده می‌شود.
             </p>
           </div>

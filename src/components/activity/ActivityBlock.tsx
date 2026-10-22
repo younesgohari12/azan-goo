@@ -12,6 +12,9 @@ import { useYAgent } from '@/state/YAgentProvider'
  * In-thread activity block: a short, live summary of the visible work plan.
  * It renders the plan and its statuses as they arrive from the adapter — there
  * is no fake reasoning, only the steps and summaries the adapter reports.
+ *
+ * Collapsed by default: the summary and progress first, the technical detail
+ * (step logs, receipts) second.
  */
 export function ActivityBlock({ taskId }: { taskId: string }) {
   const { state } = useYAgent()
@@ -38,22 +41,19 @@ export function ActivityBlock({ taskId }: { taskId: string }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: [0.22, 0.61, 0.36, 1] }}
       className={cn(
-        'my-3 overflow-hidden rounded-y-lg border bg-y-surface-soft/70',
-        task.status === 'error' ? 'border-y-danger/25' : 'border-y-line',
+        'my-3 overflow-hidden rounded-y-lg border bg-y-surface-soft',
+        task.status === 'error' ? 'border-y-danger/30' : 'border-y-line',
       )}
     >
       <button
         type="button"
         onClick={() => setExpanded((value) => !value)}
         aria-expanded={expanded}
-        className="flex w-full items-start gap-3 px-3.5 py-3 text-start"
+        className="flex w-full items-start gap-3 px-3.5 py-3 text-start transition-colors duration-y-fast hover:bg-y-surface-hover"
       >
         <span className="relative mt-0.5 flex h-5 w-5 items-center justify-center">
           {live ? (
-            <>
-              <span className="absolute inset-0 rounded-full bg-y-accent/20 animate-y-ring" />
-              <Spinner size={16} />
-            </>
+            <Spinner size={16} />
           ) : (
             <StepStatusIcon
               status={
@@ -77,7 +77,7 @@ export function ActivityBlock({ taskId }: { taskId: string }) {
               {formatElapsed(elapsed)}
             </span>
           </span>
-          <span className="mt-1 block text-y-base leading-7 text-y-ink-muted">
+          <span className="mt-1 block text-y-sm text-y-ink-muted">
             {task.status === 'error' && task.error ? task.error : task.summary}
           </span>
           {activeStep && live ? (
@@ -93,6 +93,7 @@ export function ActivityBlock({ taskId }: { taskId: string }) {
             'mt-1 h-4 w-4 shrink-0 text-y-ink-dim transition-transform duration-y ease-y',
             expanded && 'rotate-180',
           )}
+          aria-hidden
         />
       </button>
 
@@ -123,12 +124,7 @@ export function ActivityBlock({ taskId }: { taskId: string }) {
                   <StepStatusIcon status={step.status} index={index + 1} className="mt-0.5" />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={cn(
-                          'text-y-sm',
-                          step.status === 'pending' ? 'text-y-ink-dim' : 'text-y-ink',
-                        )}
-                      >
+                      <span className={cn('text-y-sm', step.status === 'pending' ? 'text-y-ink-dim' : 'text-y-ink')}>
                         {step.title}
                       </span>
                       <span className={cn('text-y-xs', toneTextClass(STEP_STATUS_META[step.status].tone))}>
@@ -136,7 +132,7 @@ export function ActivityBlock({ taskId }: { taskId: string }) {
                       </span>
                     </div>
                     {step.summary ? (
-                      <p className="mt-0.5 text-y-xs leading-6 text-y-ink-muted">{step.summary}</p>
+                      <p className="mt-0.5 text-y-xs text-y-ink-muted">{step.summary}</p>
                     ) : null}
                     {step.detail?.logs?.length ? (
                       <pre className="yagent-ltr mt-1.5 max-w-full overflow-x-auto rounded-y-xs bg-y-bg p-2 text-[11px] leading-5 text-y-ink-dim">

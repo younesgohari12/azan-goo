@@ -232,6 +232,9 @@ export function createSeed(): MockSeed {
     summary: 'نسخهٔ تازه ساخته شد.',
     steps: stepsFromPlan(FEEDBACK_STEPS, FEEDBACK_STEPS.map(() => 'done'), feedbackTaskStart, 't-feedback-landing'),
   })
+  // That run produced revision 2; the step links straight to it, so the restored
+  // plan can offer "مشاهدهٔ پیش‌نمایش" without a live event.
+  tFeedback.steps[2].detail = { ...tFeedback.steps[2].detail, previewRevisionId: 'rev-landing-2' }
 
   const pluginTaskStart = now - 3 * HOUR
   const pluginSteps = stepsFromPlan(PLUGIN_STEPS, ['done', 'done', 'done', 'waiting_approval', 'pending'], pluginTaskStart, 't-plugin')
@@ -312,11 +315,14 @@ export function createSeed(): MockSeed {
       conversationId: 'c-landing',
       title: 'صفحهٔ فرود منتشر شد',
       status: 'success',
-      message: 'صفحهٔ فرود استودیو آرا روی سایت منتشر شد و نسخهٔ قبلی در تاریخچه ماند.',
-      link: '#',
+      message:
+        'صفحهٔ فرود استودیو آرا به‌صورت آزمایشی منتشر شد و نسخهٔ قبلی در تاریخچه ماند. روی سایت واقعی چیزی تغییر نکرد.',
+      // Without the revision the card could not tell which page its preview
+      // belongs to, so "مشاهدهٔ پیش‌نمایش" did nothing after a reload.
+      previewRevisionId: 'rev-landing-1',
       technical: [
         { label: 'شناسهٔ انتشار', value: 'pub_8f31c2' },
-        { label: 'زمان پاسخ سرور', value: '۰.۹ ثانیه' },
+        { label: 'نوع', value: 'انتشار آزمایشی (نسخهٔ نمایشی)' },
       ],
       createdAt: landingTaskStart + 12_000,
     },
@@ -326,7 +332,7 @@ export function createSeed(): MockSeed {
       title: 'نسخهٔ ۲ آمادهٔ بازبینی است',
       status: 'success',
       message: 'تغییرهای خواسته‌شده اعمال شد و نسخهٔ تازه به عنوان پیش‌نویس ثبت شد.',
-      link: '#',
+      previewRevisionId: 'rev-landing-2',
       technical: [
         { label: 'نسخهٔ مبنا', value: 'v1' },
         { label: 'نسخهٔ جدید', value: 'v2' },
@@ -339,7 +345,6 @@ export function createSeed(): MockSeed {
       title: 'گزارش بررسی سرعت آماده شد',
       status: 'success',
       message: '۷ پیشنهاد اولویت‌دار برای رساندن امتیاز از ۵۴ به ۸۸ آماده است.',
-      link: '#',
       technical: [
         { label: 'ابزار', value: 'yagent-audit 0.9' },
         { label: 'زمان بررسی', value: '۵.۱ ثانیه' },
@@ -434,6 +439,15 @@ export function createSeed(): MockSeed {
       kind: 'result',
       resultId: 'res-landing-v2',
       createdAt: now - 48 * MINUTE,
+      status: 'complete',
+    },
+    {
+      id: 'm-landing-9',
+      conversationId: 'c-landing',
+      role: 'assistant',
+      kind: 'text',
+      text: 'نسخهٔ ۲ به‌عنوان پیش‌نویس ثبت شد. می‌توانی آن را با نسخهٔ ۱ مقایسه کنی یا انتشار آزمایشی‌اش کنی.',
+      createdAt: now - 48 * MINUTE + 2_000,
       status: 'complete',
     },
 

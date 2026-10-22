@@ -1,5 +1,22 @@
 import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { extendTailwindMerge } from 'tailwind-merge'
+
+/**
+ * `text-y-xl` and `text-y-ink` both start with `text-`, and the stock
+ * tailwind-merge config does not know our custom font sizes. Without this it
+ * treats them as one group and drops the earlier class — so
+ * `cn('text-y-xl text-y-ink')` silently lost the size and every heading fell
+ * back to the inherited one. Declaring the custom scale keeps size and colour
+ * side by side, while a genuine size conflict (`text-y-sm text-y-lg`) still
+ * resolves to the last one.
+ */
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      'font-size': [{ text: ['y-xs', 'y-sm', 'y-base', 'y-md', 'y-lg', 'y-xl', 'y-2xl'] }],
+    },
+  },
+})
 
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs))

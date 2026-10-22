@@ -57,12 +57,11 @@ export function ConversationRow({
         <button
           type="button"
           onClick={onSelect}
+          aria-label={conversation.title}
           className={cn(
-            'mx-auto flex h-9 w-9 items-center justify-center rounded-y-sm text-y-sm font-medium',
+            'yagent-tap mx-auto flex h-9 w-9 items-center justify-center rounded-y-sm text-y-sm font-medium',
             'transition-colors duration-y-fast ease-y',
-            selected
-              ? 'bg-y-surface text-y-ink'
-              : 'text-y-ink-dim hover:bg-y-surface-soft hover:text-y-ink-muted',
+            selected ? 'bg-y-surface text-y-ink' : 'text-y-ink-dim hover:bg-y-surface-soft hover:text-y-ink-muted',
           )}
         >
           {conversation.pinned ? <Pin className="h-3.5 w-3.5" /> : conversation.title.trim().charAt(0) || 'گ'}
@@ -74,7 +73,11 @@ export function ConversationRow({
   if (renaming) {
     return (
       <div className="flex items-center gap-1.5 rounded-y-sm bg-y-surface px-2 py-1.5">
+        <label className="sr-only" htmlFor={`rename-${conversation.id}`}>
+          نام گفتگو
+        </label>
         <input
+          id={`rename-${conversation.id}`}
           ref={inputRef}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
@@ -118,26 +121,26 @@ export function ConversationRow({
         title={conversation.title}
         className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-start"
       >
-        {conversation.pinned ? <Pin className="h-3 w-3 shrink-0 text-y-accent/80" /> : null}
+        {conversation.pinned ? <Pin className="h-3 w-3 shrink-0 text-y-accent" aria-hidden /> : null}
         <span className={cn('truncate text-y-base', selected ? 'text-y-ink' : 'text-y-ink-muted')}>
           {truncate(conversation.title, 42)}
         </span>
-        {busy ? <StatusDot tone="accent" className="ms-auto animate-y-blink" /> : null}
+        {busy ? <StatusDot tone="accent" className="ms-auto" /> : null}
       </button>
 
-      <div className="absolute end-1 flex items-center opacity-0 transition-opacity duration-y-fast group-hover:opacity-100 group-focus-within:opacity-100">
+      <div className="yagent-reveal absolute end-1 flex items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <IconButton
               label="گزینه‌های گفتگو"
               size="xs"
-              className="bg-y-sidebar/90 backdrop-blur data-[state=open]:opacity-100"
+              className="bg-y-sidebar/90 backdrop-blur"
               onClick={(event) => event.stopPropagation()}
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
             </IconButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="min-w-[11rem]">
+          <DropdownMenuContent align="start" className="min-w-[12rem]">
             <DropdownMenuItem icon={<Pencil className="h-3.5 w-3.5" />} onSelect={() => setRenaming(true)}>
               تغییر نام
             </DropdownMenuItem>
@@ -162,7 +165,7 @@ export function ConversationGroupHeader({ label, count }: { label: string; count
   return (
     <div className="flex items-center justify-between px-2.5 pb-1.5 pt-4">
       <span className="text-y-xs font-medium text-y-ink-dim">{label}</span>
-      <span className="yagent-num text-y-xs text-y-ink-dim/70">{fa(count)}</span>
+      <span className="yagent-num text-y-xs text-y-ink-dim">{fa(count)}</span>
     </div>
   )
 }

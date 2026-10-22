@@ -60,7 +60,7 @@ export function AttachmentChip({
       </span>
 
       {onRemove ? (
-        <IconButton label="حذف فایل" size="xs" onClick={() => onRemove(attachment.id)}>
+        <IconButton label={`حذف فایل ${attachment.name}`} size="xs" onClick={() => onRemove(attachment.id)}>
           <X className="h-3.5 w-3.5" />
         </IconButton>
       ) : null}

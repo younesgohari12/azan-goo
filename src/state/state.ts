@@ -12,6 +12,14 @@ import type {
   Task,
 } from '@/types/model'
 
+/**
+ * `fit` shrinks the device frame so the whole page is visible inside the
+ * workspace; `actual` shows it at 100% and lets the canvas scroll. This is a
+ * presentation-only scale — the device width stays what the user selected, so
+ * annotations keep matching the viewport they were drawn on.
+ */
+export type PreviewZoom = 'fit' | 'actual'
+
 export interface PreviewState {
   open: boolean
   pageId?: string
@@ -21,6 +29,7 @@ export interface PreviewState {
   compareRevisionId?: string
   device: PreviewDevice
   width: number
+  zoom: PreviewZoom
   annotate: boolean
   selectedAnnotationId?: string
   /** Bumped to force the iframe to reload the document. */
@@ -94,6 +103,7 @@ export function createInitialState(capabilities: AdapterCapabilities): YAgentSta
       open: false,
       device: 'desktop',
       width: DEFAULT_PREVIEW_WIDTH.desktop,
+      zoom: 'fit',
       annotate: false,
       nonce: 0,
       height: 0,
@@ -114,6 +124,17 @@ export function composerOf(state: YAgentState, conversationId: string | null): C
 export function messagesOf(state: YAgentState, conversationId: string | null): Message[] {
   if (!conversationId) return []
   return state.messagesByConversation[conversationId] ?? []
+}
+
+/**
+ * The conversation that owns the page currently shown in the preview workspace.
+ * A preview belongs to exactly one conversation, and feedback may only travel to
+ * that one — otherwise notes drawn on one page could be filed under an unrelated
+ * chat.
+ */
+export function conversationOwningPage(state: YAgentState, pageId?: string): Conversation | undefined {
+  if (!pageId) return undefined
+  return state.conversations.find((conversation) => conversation.previewPageId === pageId)
 }
 
 export function revisionsOfPage(state: YAgentState, pageId?: string): PreviewRevision[] {

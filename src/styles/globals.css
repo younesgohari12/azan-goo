@@ -9,49 +9,65 @@
    to `.yagent-root`. Moving the interface into the WordPress plugin therefore
    only means mounting the React tree inside `.yagent-root` — no global CSS, and
    no leakage into the host admin styles (nor the other way around).
+
+   Colours are stored as space-separated RGB channels (not hex, not rgba) so
+   Tailwind can build opacity variants from them: `bg-y-surface/60`,
+   `border-y-accent-border/60`, `ring-y-success/25`. Tokens whose design default
+   is translucent carry that alpha in a separate `--y-<name>-a` variable, which
+   tailwind.config.js multiplies into the requested alpha.
    ============================================================================= */
 .yagent-root {
-  /* surfaces */
-  --y-bg: #141416;
-  --y-bg-elevated: #17171a;
-  --y-sidebar: #101012;
-  --y-surface: #202024;
-  --y-surface-soft: #1b1b1f;
-  --y-surface-hover: #232329;
+  /* surfaces — three quiet levels: app, elevated panel, control surface */
+  --y-bg: 20 20 22; /* #141416 */
+  --y-bg-elevated: 25 25 29; /* #19191d */
+  --y-sidebar: 16 16 18; /* #101012 */
+  --y-surface: 32 32 36; /* #202024 */
+  --y-surface-soft: 27 27 31; /* #1b1b1f */
+  --y-surface-hover: 37 37 43; /* #25252b */
 
-  /* lines */
-  --y-border: rgba(255, 255, 255, 0.06);
-  --y-border-strong: rgba(255, 255, 255, 0.11);
+  /* hairlines: subtle, but always visible against every surface */
+  --y-line: 255 255 255;
+  --y-line-a: 0.07;
+  --y-line-strong: 255 255 255;
+  --y-line-strong-a: 0.14;
 
-  /* type */
-  --y-text: #ececf0;
-  --y-text-muted: #a0a0ab;
-  --y-text-dim: #71717c;
+  /* type — muted/dim stay above 4.5:1 on every surface of the dark theme */
+  --y-ink: 236 236 240; /* #ececf0 — 15.5:1 */
+  --y-ink-muted: 178 178 188; /* #b2b2bc — 9.8:1 */
+  --y-ink-dim: 143 143 154; /* #8f8f9a — 5.8:1 */
 
-  /* accents */
-  --y-accent: #8b7cf6;
-  --y-accent-hover: #9c8ff9;
-  --y-accent-soft: rgba(139, 124, 246, 0.13);
-  --y-accent-border: rgba(139, 124, 246, 0.38);
+  /* one restrained accent */
+  --y-accent: 139 124 246; /* #8b7cf6 — accent text/borders: 5.7:1 on the app background */
+  --y-accent-hover: 160 148 250; /* #a094fa */
+  --y-accent-strong: 109 92 231; /* #6d5ce7 — filled buttons: white label stays ≥4.5:1 */
+  --y-accent-strong-hover: 124 108 240; /* #7c6cf0 */
+  --y-accent-soft: 139 124 246;
+  --y-accent-soft-a: 0.13;
+  --y-accent-border: 139 124 246;
+  --y-accent-border-a: 0.38;
 
-  --y-success: #34d399;
-  --y-success-soft: rgba(52, 211, 153, 0.12);
-  --y-warn: #e0a93a;
-  --y-warn-soft: rgba(224, 169, 58, 0.13);
-  --y-danger: #f0605f;
-  --y-danger-soft: rgba(240, 96, 95, 0.12);
+  /* semantic status colours */
+  --y-success: 52 211 153; /* #34d399 */
+  --y-success-soft: 52 211 153;
+  --y-success-soft-a: 0.12;
+  --y-warn: 224 169 58; /* #e0a93a */
+  --y-warn-soft: 224 169 58;
+  --y-warn-soft-a: 0.13;
+  --y-danger: 240 96 95; /* #f0605f */
+  --y-danger-soft: 240 96 95;
+  --y-danger-soft-a: 0.12;
 
-  /* geometry */
+  /* geometry — a small, consistent set */
   --y-radius-xs: 6px;
-  --y-radius-sm: 9px;
-  --y-radius-md: 12px;
-  --y-radius-lg: 16px;
-  --y-radius-xl: 22px;
-  --y-radius-2xl: 28px;
+  --y-radius-sm: 8px;
+  --y-radius-md: 10px;
+  --y-radius-lg: 14px;
+  --y-radius-xl: 18px;
+  --y-radius-2xl: 24px;
 
-  /* elevation */
+  /* elevation — soft, never glossy */
   --y-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px -18px rgba(0, 0, 0, 0.7);
-  --y-shadow-pop: 0 16px 40px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --y-shadow-pop: 0 16px 40px -12px rgba(0, 0, 0, 0.72), 0 2px 6px rgba(0, 0, 0, 0.4);
 
   /* motion — short, quiet, predictable */
   --y-dur-fast: 150ms;
@@ -60,17 +76,22 @@
   --y-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 
   /* layout */
-  --y-sidebar-w: 260px;
-  --y-sidebar-rail-w: 72px;
-  --y-panel-w: 300px;
+  --y-sidebar-w: 252px;
+  --y-sidebar-rail-w: 64px;
+  --y-panel-w: 304px;
   --y-reading-w: 46rem;
-  --y-header-h: 56px;
 
   font-family: 'Vazirmatn Variable', Vazirmatn, 'Segoe UI', Tahoma, system-ui, -apple-system, sans-serif;
-  font-size: 13.5px;
-  line-height: 1.8;
-  color: var(--y-text);
-  background-color: var(--y-bg);
+  font-size: 14px;
+  line-height: 1.85;
+  color: rgb(var(--y-ink));
+  background-color: rgb(var(--y-bg));
+  /* Long unbroken strings (URLs, file names, ids) must stay inside their box.
+     `anywhere` also shrinks the min-content width, which is what flex/grid
+     children measure — so a 400-character token can no longer push a column
+     wide. `pre` opts out again below so code still scrolls. */
+  overflow-wrap: anywhere;
+  word-break: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -78,110 +99,156 @@
 
 /* -----------------------------------------------------------------------------
    Scoped reset.
-   Replaces Tailwind's global preflight (disabled in tailwind.config.js) so the
-   widget never resets body, buttons or inputs belonging to the host page.
+
+   Replaces Tailwind's global preflight, which is disabled because the widget
+   must never restyle the host page: every selector stays inside `.yagent-root`.
+
+   Every selector is wrapped in `:where()` so it contributes ZERO specificity.
+   Tailwind 3 flattens its `@layer base` block into the plain stylesheet
+   (verified: the output contains no native `@layer`), so position alone does not
+   protect utilities — a reset written as `.yagent-root ul { list-style: none }`
+   is (0,1,1) and beats `.list-disc` (0,1,0) whatever the order. That is what
+   silently removed markdown bullets and numbering, `ps-5` list padding, the
+   send button's background/padding, and the paragraph rhythm. At zero
+   specificity every utility wins, while the reset still overrides the browser's
+   own defaults.
    -------------------------------------------------------------------------- */
-.yagent-root,
-.yagent-root *,
-.yagent-root *::before,
-.yagent-root *::after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
-  border-color: var(--y-border);
+@layer base {
+  :where(.yagent-root),
+  :where(.yagent-root) *,
+  :where(.yagent-root) *::before,
+  :where(.yagent-root) *::after,
+  :where(.yagent-portal-layer),
+  :where(.yagent-portal-layer) *,
+  :where(.yagent-portal-layer) *::before,
+  :where(.yagent-portal-layer) *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: rgb(var(--y-line) / var(--y-line-a));
+  }
+
+  :where(.yagent-root) h1,
+  :where(.yagent-root) h2,
+  :where(.yagent-root) h3,
+  :where(.yagent-root) h4,
+  :where(.yagent-root) p,
+  :where(.yagent-root) figure,
+  :where(.yagent-root) blockquote,
+  :where(.yagent-root) dl,
+  :where(.yagent-root) dd {
+    margin: 0;
+  }
+
+  :where(.yagent-root) ul,
+  :where(.yagent-root) ol {
+    margin: 0;
+    padding: 0;
+    /* Hidden by default (the UI uses plain lists); `list-disc` / `list-decimal`
+       from the utilities layer restore markers in markdown output. */
+    list-style: none;
+  }
+
+  :where(.yagent-root) button,
+  :where(.yagent-root) input,
+  :where(.yagent-root) textarea,
+  :where(.yagent-root) select {
+    margin: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  :where(.yagent-root) button {
+    cursor: pointer;
+  }
+
+  :where(.yagent-root) button:disabled,
+  :where(.yagent-root) [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  :where(.yagent-root) textarea {
+    resize: none;
+  }
+
+  :where(.yagent-root) a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :where(.yagent-root) img,
+  :where(.yagent-root) svg,
+  :where(.yagent-root) video {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Code keeps its own line breaking: long lines scroll instead of wrapping. */
+  :where(.yagent-root) pre {
+    overflow-wrap: normal;
+    word-break: normal;
+    white-space: pre;
+  }
 }
 
-.yagent-root h1,
-.yagent-root h2,
-.yagent-root h3,
-.yagent-root h4,
-.yagent-root p,
-.yagent-root figure,
-.yagent-root blockquote,
-.yagent-root dl,
-.yagent-root dd {
-  margin: 0;
+/* Portal layer: Radix renders menus, tooltips, dialogs and sheets into
+   document.body, outside the app root. This wrapper carries `.yagent-root` (so
+   tokens, font and reset apply there too) plus `dir="rtl"`, while staying a
+   plain static box so the fixed-positioned popper/dialog keeps working. */
+.yagent-portal-layer {
+  position: static;
+  z-index: auto;
+  /* The wrapper carries `.yagent-root` for tokens/font/reset; it must never
+     paint a surface of its own (a full-screen dialog scrim would otherwise
+     become an opaque panel). */
+  background-color: transparent;
 }
 
-.yagent-root ul,
-.yagent-root ol {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.yagent-root button,
-.yagent-root input,
-.yagent-root textarea,
-.yagent-root select {
-  margin: 0;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: 0;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.yagent-root button {
-  cursor: pointer;
-}
-
-.yagent-root button:disabled {
-  cursor: not-allowed;
-}
-
-.yagent-root textarea {
-  resize: none;
-}
-
-.yagent-root a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.yagent-root img,
-.yagent-root svg,
-.yagent-root video {
-  display: block;
-  max-width: 100%;
-}
-
-.yagent-root :focus-visible {
-  outline: 2px solid var(--y-accent-border);
+.yagent-root :focus-visible,
+.yagent-portal-layer :focus-visible {
+  outline: 2px solid rgb(var(--y-accent));
   outline-offset: 2px;
 }
 
 .yagent-root ::selection {
-  background: var(--y-accent-soft);
-  color: var(--y-text);
+  background: rgb(var(--y-accent) / 0.3);
+  color: rgb(var(--y-ink));
 }
 
 /* quiet, controlled scroll areas */
-.yagent-root * {
+.yagent-root *,
+.yagent-portal-layer * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.13) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
 }
 
-.yagent-root ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.yagent-root ::-webkit-scrollbar,
+.yagent-portal-layer ::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
 }
 
-.yagent-root ::-webkit-scrollbar-track {
+.yagent-root ::-webkit-scrollbar-track,
+.yagent-portal-layer ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.yagent-root ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.11);
+.yagent-root ::-webkit-scrollbar-thumb,
+.yagent-portal-layer ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
-.yagent-root ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+.yagent-root ::-webkit-scrollbar-thumb:hover,
+.yagent-portal-layer ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.24);
   background-clip: content-box;
 }
 
@@ -213,14 +280,9 @@
   position: absolute;
   top: 26px;
   bottom: -6px;
-  inset-inline-start: 11px;
+  inset-inline-start: 9px;
   width: 1px;
-  background: linear-gradient(
-    to bottom,
-    var(--y-border-strong),
-    var(--y-border) 70%,
-    transparent
-  );
+  background: linear-gradient(to bottom, rgb(var(--y-line-strong) / var(--y-line-strong-a)), transparent);
 }
 
 .yagent-step-line:last-child::before {
@@ -229,8 +291,8 @@
 
 /* dotted canvas backdrop behind the preview workspace */
 .yagent-canvas-bg {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-  background-size: 22px 22px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
   background-position: 0 0;
 }
 
@@ -239,10 +301,40 @@
   mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
 }
 
+/* Secondary actions (copy, message time, row menu) are quiet until they are
+   needed — but on a touch screen there is no hover, so there they are always
+   visible instead of unreachable. */
+.yagent-reveal {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .yagent-reveal {
+    opacity: 0;
+    transition: opacity var(--y-dur-fast) var(--y-ease);
+  }
+  .group:hover .yagent-reveal,
+  .group:focus-within .yagent-reveal {
+    opacity: 1;
+  }
+}
+
+/* Touch targets: on phones/tablets the controls people actually tap (toolbar,
+   composer, sheet headers) grow to the ~44px minimum. */
+@media (max-width: 1023px) {
+  .yagent-tap {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .yagent-root *,
   .yagent-root *::before,
-  .yagent-root *::after {
+  .yagent-root *::after,
+  .yagent-portal-layer *,
+  .yagent-portal-layer *::before,
+  .yagent-portal-layer *::after {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;

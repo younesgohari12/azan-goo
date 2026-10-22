@@ -11,7 +11,7 @@ import type {
   Task,
   TaskStep,
 } from '@/types/model'
-import { DEFAULT_PREVIEW_WIDTH, type ComposerState, type YAgentState } from './state'
+import { DEFAULT_PREVIEW_WIDTH, type ComposerState, type PreviewZoom, type YAgentState } from './state'
 
 export type YAgentAction =
   | { type: 'booted'; conversations: Conversation[]; models: YAgentState['models'] }
@@ -24,6 +24,7 @@ export type YAgentAction =
       approvals: Approval[]
       results: ActionResult[]
       annotations: Annotation[]
+      revisions: PreviewRevision[]
     }
   | { type: 'conversation:select'; conversationId: string }
   | { type: 'search:set'; query: string }
@@ -35,6 +36,7 @@ export type YAgentAction =
   | { type: 'preview:loaded'; revisions: PreviewRevision[]; annotations: Annotation[] }
   | { type: 'preview:device'; device: PreviewDevice }
   | { type: 'preview:width'; width: number }
+  | { type: 'preview:zoom'; zoom: PreviewZoom }
   | { type: 'preview:annotate'; enabled: boolean }
   | { type: 'preview:revision'; revisionId: string }
   | { type: 'preview:compare'; revisionId?: string }
@@ -220,8 +222,8 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
     case 'conversations:sync':
       return { ...state, conversations: action.conversations }
 
-    case 'conversation:loaded':
-      return {
+    case 'conversation:loaded': {
+      let next: YAgentState = {
         ...state,
         messagesByConversation: { ...state.messagesByConversation, [action.conversationId]: action.messages },
         tasks: mergeMissing(state.tasks, action.tasks),
@@ -229,9 +231,32 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
         results: mergeMissing(state.results, action.results),
         annotations: mergeMissing(state.annotations, action.annotations),
       }
+      // Restored revisions let a result card resolve its page and reopen the
+      // preview, even after a reload.
+      action.revisions.forEach((revision) => {
+        next = mergeRevision(next, revision)
+      })
+      return next
+    }
 
-    case 'conversation:select':
-      return { ...state, activeConversationId: action.conversationId }
+    case 'conversation:select': {
+      if (action.conversationId === state.activeConversationId) return state
+      const target = state.conversations.find((item) => item.id === action.conversationId)
+      // A preview (and the notes written on it) belongs to one conversation.
+      // Switching to a conversation that does not own the open page closes the
+      // workspace instead of leaving the previous page's notes attached to an
+      // unrelated chat. Drafts stay stored — they reappear with their own page.
+      const keepPreview = Boolean(
+        state.preview.open && target?.previewPageId && target.previewPageId === state.preview.pageId,
+      )
+      return {
+        ...state,
+        activeConversationId: action.conversationId,
+        preview: keepPreview
+          ? state.preview
+          : { ...state.preview, open: false, annotate: false, selectedAnnotationId: undefined },
+      }
+    }
 
     case 'search:set':
       return { ...state, searchQuery: action.query }
@@ -249,18 +274,23 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
     case 'model:select':
       return { ...state, selectedModelId: action.modelId }
 
-    case 'preview:open':
+    case 'preview:open': {
+      // Opening page B must not inherit page A's revision: the workspace would
+      // render the wrong page until something else replaced it. The revision is
+      // only carried over when the same page is reopened.
+      const samePage = state.preview.pageId === action.pageId
       return {
         ...state,
         preview: {
           ...state.preview,
           open: true,
           pageId: action.pageId,
-          revisionId: action.revisionId ?? state.preview.revisionId,
+          revisionId: samePage ? (action.revisionId ?? state.preview.revisionId) : action.revisionId,
           nonce: state.preview.nonce + 1,
           height: 0,
         },
       }
+    }
 
     case 'preview:close':
       return { ...state, preview: { ...state.preview, open: false, annotate: false, selectedAnnotationId: undefined } }
@@ -275,12 +305,14 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
         annotations[annotation.id] = annotation
       })
       const newest = [...action.revisions].sort((a, b) => b.revision - a.revision)[0]
+      const current = next.preview.revisionId ? next.revisions[next.preview.revisionId] : undefined
+      const belongsToOpenPage = current && current.pageId === next.preview.pageId
       return {
         ...next,
         annotations,
         preview: {
           ...next.preview,
-          revisionId: next.preview.revisionId ?? newest?.id,
+          revisionId: belongsToOpenPage ? next.preview.revisionId : newest?.id,
         },
       }
     }
@@ -297,6 +329,9 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
 
     case 'preview:width':
       return { ...state, preview: { ...state.preview, width: Math.max(320, Math.min(1920, action.width)) } }
+
+    case 'preview:zoom':
+      return { ...state, preview: { ...state.preview, zoom: action.zoom } }
 
     case 'preview:annotate':
       return {

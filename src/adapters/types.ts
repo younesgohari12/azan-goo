@@ -67,6 +67,14 @@ export interface ConversationSnapshot {
   results: ActionResult[]
   /** Annotations referenced by the conversation's feedback messages. */
   annotations: Annotation[]
+  /**
+   * The revisions the restored conversation needs: at least the ones its result
+   * and step cards point at. A result card only carries a `previewRevisionId`,
+   * so without the revision the interface cannot tell which page the preview
+   * belongs to — which is why "مشاهدهٔ پیش‌نمایش" used to do nothing after the
+   * conversation was restored from the backend.
+   */
+  revisions: PreviewRevision[]
 }
 
 export type ApprovalDecision = 'approve' | 'reject'

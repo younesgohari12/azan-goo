@@ -14,12 +14,14 @@ import type { Annotation, Attachment, PreviewDevice } from '@/types/model'
 import { percentOf, uid } from '@/lib/utils'
 import {
   composerOf,
+  conversationOwningPage,
   createInitialState,
   currentTaskOf,
   draftAnnotationsOf,
   messagesOf,
   pageAnnotationsOf,
   revisionsOfPage,
+  type PreviewZoom,
   type YAgentState,
 } from './state'
 import { reducer } from './reducer'
@@ -55,6 +57,7 @@ export interface YAgentActions {
   closePreview: () => void
   setDevice: (device: PreviewDevice) => void
   setPreviewWidth: (width: number) => void
+  setZoom: (zoom: PreviewZoom) => void
   setAnnotate: (enabled: boolean) => void
   selectRevision: (revisionId: string) => void
   setCompareRevision: (revisionId?: string) => void
@@ -84,6 +87,8 @@ interface YAgentContextValue {
     revisions: ReturnType<typeof revisionsOfPage>
     currentRevision: YAgentState['revisions'][string] | undefined
     pendingApproval: YAgentState['approvals'][string] | undefined
+    /** Conversation that owns the page shown in the preview workspace. */
+    previewOwner: YAgentState['conversations'][number] | undefined
     canSend: boolean
   }
 }
@@ -248,11 +253,17 @@ export function YAgentProvider({
         await adapter.publishRevision(revisionId)
       },
       async openPreview(pageId, revisionId) {
-        const current = stateRef.current.preview
+        const current = stateRef.current
+        // A page belongs to one conversation: open the workspace in the chat
+        // that owns it, so the notes taken here are filed under the right one.
+        const owner = conversationOwningPage(current, pageId)
+        if (owner && owner.id !== current.activeConversationId) {
+          dispatch({ type: 'conversation:select', conversationId: owner.id })
+        }
         dispatch({
           type: 'preview:open',
           pageId,
-          revisionId: current.pageId === pageId ? current.revisionId : revisionId,
+          revisionId: current.preview.pageId === pageId ? current.preview.revisionId : revisionId,
         })
         dispatch({ type: 'panel:set', open: false })
         const preview = await adapter.getPagePreview(pageId)
@@ -267,6 +278,9 @@ export function YAgentProvider({
       },
       setPreviewWidth(width) {
         dispatch({ type: 'preview:width', width })
+      },
+      setZoom(zoom) {
+        dispatch({ type: 'preview:zoom', zoom })
       },
       setAnnotate(enabled) {
         dispatch({ type: 'preview:annotate', enabled })
@@ -325,10 +339,17 @@ export function YAgentProvider({
         await adapter.resolveAnnotation(annotationId)
       },
       async sendFeedback() {
-        const { preview } = stateRef.current
-        const conversationId = activeId()
-        const drafts = draftAnnotationsOf(stateRef.current)
-        if (!conversationId || !preview.pageId || !preview.revisionId || drafts.length === 0) return
+        const current = stateRef.current
+        const { preview } = current
+        const drafts = draftAnnotationsOf(current)
+        if (!preview.pageId || !preview.revisionId || drafts.length === 0) return
+        // Notes only ever go to the conversation that owns this page.
+        const owner = conversationOwningPage(current, preview.pageId)
+        const conversationId = owner?.id ?? activeId()
+        if (!conversationId) return
+        if (conversationId !== current.activeConversationId) {
+          dispatch({ type: 'conversation:select', conversationId })
+        }
         const payload = drafts.map((draft) => ({ ...draft }))
         dispatch({ type: 'preview:annotate', enabled: false })
         dispatch({ type: 'panel:set', open: true, tab: 'feedback' })
@@ -363,6 +384,7 @@ export function YAgentProvider({
       .sort((a, b) => a.createdAt - b.createdAt)[0]
     const composer = composerOf(state, state.activeConversationId)
     const canSend = composer.text.trim().length > 0 || composer.attachments.length > 0
+    const previewOwner = conversationOwningPage(state, state.preview.pageId)
 
     return {
       activeConversation,
@@ -375,6 +397,7 @@ export function YAgentProvider({
       revisions,
       currentRevision,
       pendingApproval,
+      previewOwner,
       canSend,
     }
   }, [state])

@@ -61,6 +61,20 @@ export default defineConfig({
       '@': path.resolve(rootDir, 'src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Split the heavy, rarely-changing libraries out of the app chunk so a
+        // code change does not invalidate them, and so the preview workspace (a
+        // lazy route already) does not drag the whole shell in with it.
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          motion: ['framer-motion'],
+          markdown: ['react-markdown', 'remark-gfm'],
+        },
+      },
+    },
+  },
   server: {
     host: true,
     port: 5173,

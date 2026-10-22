@@ -3,15 +3,17 @@ import { useEffect, useRef, useState } from 'react'
 
 import { EmptyState } from './EmptyState'
 import { MessageItem } from './MessageItem'
+import { TASK_STATUS_META } from '@/components/activity/status'
 import { cn } from '@/lib/utils'
 import { useYAgent } from '@/state/YAgentProvider'
 
-/** Chat column: independent, controlled scrolling with a sticky composer below. */
+/** Chat column: independent, controlled scrolling with the composer below. */
 export function ChatThread() {
   const { derived } = useYAgent()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [atBottom, setAtBottom] = useState(true)
   const messages = derived.messages
+  const task = derived.currentTask
 
   // A cheap signature lets us react to deltas, status changes and new cards.
   const signature = `${messages.length}:${messages.map((message) => `${message.id}-${message.text?.length ?? 0}-${message.status}`).join('|')}`
@@ -39,9 +41,13 @@ export function ChatThread() {
     element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' })
   }
 
+  // What the work is doing is announced politely once per status change — not
+  // the token stream, which would flood a screen reader.
+  const announcement = task ? `${TASK_STATUS_META[task.status].label} — ${task.summary}` : ''
+
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col">
-      <div ref={scrollRef} onScroll={handleScroll} className="yagent-scroll flex flex-1 flex-col">
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <div ref={scrollRef} onScroll={handleScroll} className="yagent-scroll flex min-h-0 flex-1 flex-col">
         {messages.length === 0 ? (
           <EmptyState />
         ) : (
@@ -54,13 +60,17 @@ export function ChatThread() {
         )}
       </div>
 
+      <div className="sr-only" role="status" aria-live="polite">
+        {announcement}
+      </div>
+
       {!atBottom && messages.length > 0 ? (
         <button
           type="button"
           onClick={scrollToBottom}
           aria-label="رفتن به آخرین پیام"
           className={cn(
-            'absolute bottom-4 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full',
+            'absolute bottom-4 left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full',
             'border border-y-line-strong bg-y-surface text-y-ink-muted shadow-y-pop',
             'transition-colors duration-y-fast hover:text-y-ink',
           )}

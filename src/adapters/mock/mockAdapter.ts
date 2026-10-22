@@ -20,7 +20,18 @@ import type {
 } from '@/types/model'
 import { createSeed } from './fixtures'
 import { aboutPageV1, aboutPageV2, extractElementIds, landingPageV1, landingPageV2 } from './pages'
-import { feedbackPlan, scenarioFor, type ScenarioPlan } from './scenarios'
+import {
+  AUDIT_STEPS,
+  BUILD_PAGE_STEPS,
+  FAILURE_STEPS,
+  FEEDBACK_STEPS,
+  PLUGIN_STEPS,
+  QUICK_STEPS,
+  feedbackPlan,
+  scenarioFor,
+  type ScenarioPlan,
+  type StepPlan,
+} from './scenarios'
 
 /**
  * Mock adapter — a complete, self-contained simulation of the YAgent backend.
@@ -79,6 +90,31 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
 
   const listeners = new Set<AgentEventListener>()
   const runs = new Map<string, RunState>()
+
+  /** Plans of the tasks this session created, so a paused task can be resumed. */
+  const taskPlans = new Map<string, ScenarioPlan>()
+
+  /**
+   * A restored conversation has no live run behind it. To resume its paused task
+   * we match the step list against the known plans by title — enough to know what
+   * the remaining steps were meant to do, so resuming cannot invent progress.
+   */
+  const KNOWN_STEP_PLANS: StepPlan[][] = [
+    BUILD_PAGE_STEPS,
+    AUDIT_STEPS,
+    PLUGIN_STEPS,
+    FEEDBACK_STEPS,
+    FAILURE_STEPS,
+    QUICK_STEPS,
+  ]
+  function planStepsFor(task: Task): StepPlan[] | undefined {
+    const stored = taskPlans.get(task.id)
+    if (stored) return stored.steps
+    return KNOWN_STEP_PLANS.find(
+      (steps) =>
+        steps.length === task.steps.length && steps.every((step, index) => step.title === task.steps[index].title),
+    )
+  }
 
   function emit(event: AgentEvent): void {
     listeners.forEach((listener) => listener(event))
@@ -233,6 +269,7 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
       steps,
     }
     tasks.set(taskId, task)
+    taskPlans.set(taskId, plan)
     emit({ type: 'task:created', conversationId, task: clone(task) })
     addAssistantMessage(conversationId, { kind: 'activity', taskId, status: 'streaming' })
     return task
@@ -476,9 +513,9 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
         title: plan.result.title,
         status: 'success',
         message: plan.result.message,
-        link: plan.result.linkLabel && plan.kind !== 'page_feedback' ? '#' : undefined,
-        linkLabel: plan.result.linkLabel,
-        previewRevisionId: plan.kind === 'page_feedback' ? run.lastRevisionId : undefined,
+        // The revision this run produced, for every plan that made one — that is
+        // what lets the card open its preview again after a reload.
+        previewRevisionId: run.lastRevisionId,
         technical: plan.result.technical,
       })
     }
@@ -486,20 +523,67 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
     touchConversation(conversationId)
   }
 
+  /**
+   * A decision taken on a conversation that was restored from the backend: there
+   * is no live run to resume, so the approval, its task, its step and the steps
+   * that follow all have to move together. Without that, approving a restored
+   * card left the thread saying "انجام شد" while the task stayed on
+   * `waiting_approval`, the progress bar stuck at 3 of 5 and the composer
+   * disabled behind a run that had already finished.
+   */
   async function performStandaloneApproval(approval: Approval, decision: ApprovalDecision): Promise<void> {
     const conversationId = approval.conversationId
+    const task = approval.taskId ? tasks.get(approval.taskId) : undefined
+    const step = task && approval.stepId ? task.steps.find((item) => item.id === approval.stepId) : undefined
+
     if (decision === 'reject') {
       approval.status = 'rejected'
       approval.resolvedAt = Date.now()
-      emit({ type: 'approval:updated', conversationId, approvalId: approval.id, patch: { status: 'rejected', resolvedAt: approval.resolvedAt } })
-      addAssistantMessage(conversationId, { text: `«${approval.title}» را لغو کردم؛ هیچ تغییری روی سایت اعمال نشد.` })
+      emit({
+        type: 'approval:updated',
+        conversationId,
+        approvalId: approval.id,
+        patch: { status: 'rejected', resolvedAt: approval.resolvedAt },
+      })
+
+      if (task) {
+        task.steps
+          .filter((item) => item.status === 'pending' || item.status === 'waiting_approval')
+          .forEach((item) => {
+            item.status = 'skipped'
+            item.summary = 'به دلیل ردشدن تأیید اجرا نشد.'
+            item.endedAt = Date.now()
+            updateStep(conversationId, task.id, item)
+          })
+        updateTask(conversationId, task.id, {
+          status: 'done',
+          summary: 'کار بدون انجام این عملیات تمام شد.',
+          endedAt: Date.now(),
+          activeStepId: undefined,
+        })
+      }
+
+      addAssistantMessage(conversationId, {
+        text: `«${approval.title}» را لغو کردم؛ هیچ تغییری روی سایت اعمال نشد. اگر خواستی، نسخهٔ پیش‌نویس را اصلاح می‌کنم و دوباره می‌فرستم.`,
+      })
       touchConversation(conversationId)
       return
     }
 
     approval.status = 'running'
     emit({ type: 'approval:updated', conversationId, approvalId: approval.id, patch: { status: 'running' } })
-    await sleep(1500)
+    if (task) {
+      updateTask(conversationId, task.id, { status: 'running', summary: `${approval.title} در حال اجراست…` })
+    }
+    await sleep(1200)
+
+    if (approval.kind === 'publish_page' && step?.detail?.previewRevisionId) {
+      const revision = revisions.get(step.detail.previewRevisionId)
+      if (revision && revision.status === 'draft') {
+        revision.status = 'published'
+        emit({ type: 'preview:ready', conversationId, revision: clone(revision) })
+      }
+    }
 
     approval.status = 'succeeded'
     approval.resolvedAt = Date.now()
@@ -518,10 +602,49 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
       patch: { status: 'succeeded', resolvedAt: approval.resolvedAt, result: clone(approval.result) },
     })
 
+    if (task) {
+      const planned = planStepsFor(task)
+      if (step) {
+        step.status = 'done'
+        step.endedAt = Date.now()
+        step.summary = step.summary ?? 'با تأیید تو انجام شد.'
+        step.detail = {
+          ...step.detail,
+          receipt: [{ label: 'تصمیم', value: 'تأییدشده توسط کاربر' }, ...(step.detail?.receipt ?? [])],
+        }
+        updateStep(conversationId, task.id, step)
+      }
+
+      // Walk whatever is left of the same plan, so the step list, the counter and
+      // the task status all end up finished instead of half-applied.
+      for (const [index, remaining] of task.steps.entries()) {
+        if (remaining.status !== 'pending') continue
+        remaining.status = 'active'
+        remaining.startedAt = Date.now()
+        updateStep(conversationId, task.id, remaining)
+        await sleep(Math.min(900, planned?.[index]?.durationMs ?? 650))
+        remaining.status = 'done'
+        remaining.endedAt = Date.now()
+        remaining.summary = planned?.[index]?.summary ?? 'پس از تأیید تو انجام شد.'
+        remaining.detail = planned?.[index]?.detail
+        updateStep(conversationId, task.id, remaining)
+      }
+
+      updateTask(conversationId, task.id, {
+        status: 'done',
+        summary: 'کار تمام شد.',
+        endedAt: Date.now(),
+        activeStepId: undefined,
+      })
+    }
+
     addResult(conversationId, {
       title: `${approval.title} انجام شد`,
       status: 'success',
-      message: approval.kind === 'delete_plugin' ? 'افزونه حذف شد و جدول‌های مربوط به آن پاک شدند.' : approval.result.message,
+      message:
+        approval.kind === 'delete_plugin'
+          ? 'افزونه حذف شد و جدول‌های مربوط به آن پاک شدند.'
+          : approval.result.message,
       technical: approval.result.technical,
     })
     touchConversation(conversationId)
@@ -601,12 +724,32 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
       const conversationMessages = own(messages).sort((a, b) => a.createdAt - b.createdAt)
       const referenced = new Set(conversationMessages.flatMap((message) => message.annotationIds ?? []))
 
+      // Revisions the conversation needs: the page it works on, plus every
+      // revision its result cards and step details point at. A result card only
+      // carries `previewRevisionId`, so without these the preview could not be
+      // reopened (nor its page id resolved) after a reload.
+      const conversationTasks = own(tasks)
+      const conversationResults = own(results)
+      const pageIds = new Set<string>()
+      const conversation = conversations.get(conversationId)
+      if (conversation?.previewPageId) pageIds.add(conversation.previewPageId)
+      const noteRevision = (revisionId?: string) => {
+        if (!revisionId) return
+        const revision = revisions.get(revisionId)
+        if (revision) pageIds.add(revision.pageId)
+      }
+      conversationResults.forEach((result) => noteRevision(result.previewRevisionId))
+      conversationTasks.forEach((task) =>
+        task.steps.forEach((step) => noteRevision(step.detail?.previewRevisionId)),
+      )
+
       return clone({
         messages: conversationMessages,
-        tasks: own(tasks),
+        tasks: conversationTasks,
         approvals: own(approvals),
-        results: own(results),
+        results: conversationResults,
         annotations: [...annotations.values()].filter((annotation) => referenced.has(annotation.id)),
+        revisions: [...revisions.values()].filter((revision) => pageIds.has(revision.pageId)),
       })
     },
 
@@ -769,16 +912,16 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
       addResult(conversationId, {
         title: `«${revision.pageTitle}» منتشر شد`,
         status: 'success',
-        message: `نسخهٔ ${revision.revision} روی سایت منتشر شد و نسخهٔ قبلی در تاریخچه باقی ماند.`,
-        link: '#',
-        linkLabel: 'مشاهدهٔ صفحه در سایت',
+        message: `نسخهٔ ${revision.revision} به‌صورت آزمایشی منتشر شد و نسخهٔ قبلی در تاریخچه باقی ماند. روی سایت واقعی چیزی تغییر نکرد.`,
+        previewRevisionId: revision.id,
         technical: [
           { label: 'نسخه', value: `v${revision.revision}` },
           { label: 'شناسهٔ انتشار', value: uid('pub') },
+          { label: 'نوع', value: 'انتشار آزمایشی (نسخهٔ نمایشی)' },
         ],
       })
       addAssistantMessage(conversationId, {
-        text: `نسخهٔ ${revision.revision} را منتشر کردم. اگر بعداً تغییری لازم شد، از تاریخچهٔ نسخه‌ها می‌توانی برگردانی.`,
+        text: `نسخهٔ ${revision.revision} را به‌صورت آزمایشی منتشر کردم (در این نسخهٔ نمایشی انتشار روی سایت واقعی انجام نمی‌شود). اگر بعداً تغییری لازم شد، از تاریخچهٔ نسخه‌ها می‌توانی برگردانی.`,
       })
       touchConversation(conversationId)
     },

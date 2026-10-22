@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { useYAgent } from '@/state/YAgentProvider'
 import type { TaskStep } from '@/types/model'
 
+/** One step of the plan: title and status first, technical detail on demand. */
 export function TaskStepItem({ step, index }: { step: TaskStep; index: number }) {
   const { state, actions, derived } = useYAgent()
   const [open, setOpen] = useState(false)
@@ -19,7 +20,7 @@ export function TaskStepItem({ step, index }: { step: TaskStep; index: number })
   const previewPageId = state.preview.pageId ?? derived.activeConversation?.previewPageId
 
   return (
-    <li className="yagent-step-line relative ps-9">
+    <li className="yagent-step-line relative ps-8">
       <span className="absolute start-0 top-1.5">
         <StepStatusIcon status={step.status} index={index} />
       </span>
@@ -27,25 +28,21 @@ export function TaskStepItem({ step, index }: { step: TaskStep; index: number })
       <div
         className={cn(
           'rounded-y-sm px-2 py-1.5 transition-colors duration-y ease-y',
-          active ? 'bg-y-accent-soft/50 ring-1 ring-inset ring-y-accent-border/40' : 'hover:bg-y-surface-soft/70',
+          active ? 'bg-y-accent-soft ring-1 ring-inset ring-y-accent-border' : 'hover:bg-y-surface-hover',
         )}
       >
         <button
           type="button"
           onClick={() => hasDetails && setOpen((value) => !value)}
           className="flex w-full items-start gap-2 text-start"
-          aria-expanded={open}
+          aria-expanded={hasDetails ? open : undefined}
         >
           <span className="min-w-0 flex-1">
             <span className="flex flex-wrap items-center gap-2">
               <span
                 className={cn(
                   'text-y-base',
-                  active
-                    ? 'font-medium text-y-ink'
-                    : step.status === 'pending'
-                      ? 'text-y-ink-dim'
-                      : 'text-y-ink-muted',
+                  active ? 'font-medium text-y-ink' : step.status === 'pending' ? 'text-y-ink-dim' : 'text-y-ink-muted',
                 )}
               >
                 {step.title}
@@ -55,7 +52,7 @@ export function TaskStepItem({ step, index }: { step: TaskStep; index: number })
               {step.status === 'skipped' ? <Badge variant="neutral">اجرا نشد</Badge> : null}
             </span>
             {step.description ? (
-              <span className="mt-0.5 block text-y-xs leading-6 text-y-ink-dim">{step.description}</span>
+              <span className="mt-0.5 block text-y-xs text-y-ink-dim">{step.description}</span>
             ) : null}
           </span>
           {hasDetails ? (
@@ -64,6 +61,7 @@ export function TaskStepItem({ step, index }: { step: TaskStep; index: number })
                 'mt-1 h-3.5 w-3.5 shrink-0 text-y-ink-dim transition-transform duration-y ease-y',
                 open && 'rotate-180',
               )}
+              aria-hidden
             />
           ) : null}
         </button>
@@ -77,24 +75,22 @@ export function TaskStepItem({ step, index }: { step: TaskStep; index: number })
               transition={{ duration: 0.17, ease: [0.22, 0.61, 0.36, 1] }}
               className="overflow-hidden"
             >
-              <div className="mt-2 space-y-2 rounded-y-sm border border-y-line bg-y-bg/50 p-2.5">
-                {step.summary ? (
-                  <p className="text-y-sm leading-7 text-y-ink-muted">{step.summary}</p>
-                ) : null}
+              <div className="mt-2 space-y-2 rounded-y-sm border border-y-line bg-y-bg/60 p-2.5">
+                {step.summary ? <p className="text-y-sm text-y-ink-muted">{step.summary}</p> : null}
                 {step.detail?.output ? (
-                  <p className="text-y-sm leading-7 text-y-ink/90">
+                  <p className="text-y-sm text-y-ink">
                     <span className={cn('text-y-xs', toneTextClass(meta.tone))}>نتیجه · </span>
                     {step.detail.output}
                   </p>
                 ) : null}
                 {step.detail?.warning ? (
-                  <p className="flex items-start gap-1.5 text-y-sm leading-7 text-y-warn">
-                    <AlertTriangle className="mt-1.5 h-3.5 w-3.5 shrink-0" />
+                  <p className="flex items-start gap-1.5 text-y-sm text-y-warn">
+                    <AlertTriangle className="mt-1 h-3.5 w-3.5 shrink-0" />
                     <span>{step.detail.warning}</span>
                   </p>
                 ) : null}
                 {step.detail?.receipt?.length ? (
-                  <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-t border-y-line pt-2 text-y-xs">
+                  <dl className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-y-line pt-2 text-y-xs">
                     {step.detail.receipt.map((item) => (
                       <div key={item.label} className="col-span-2 flex items-center justify-between gap-3">
                         <dt className="text-y-ink-dim">{item.label}</dt>
@@ -108,12 +104,14 @@ export function TaskStepItem({ step, index }: { step: TaskStep; index: number })
                     {step.detail.logs.join('\n')}
                   </pre>
                 ) : null}
-                {step.detail?.previewRevisionId && previewPageId ? (
+                {previewPageId ? (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="w-full"
-                    onClick={() => void actions.openPreview(previewPageId, step.detail?.previewRevisionId)}
+                    className="yagent-tap w-full"
+                    onClick={() =>
+                      void actions.openPreview(previewPageId, step.detail?.previewRevisionId ?? derived.currentRevision?.id)
+                    }
                   >
                     <Eye className="h-3.5 w-3.5" />
                     مشاهدهٔ پیش‌نمایش

@@ -12,8 +12,10 @@ import { composerOf } from '@/state/state'
 const MAX_TEXTAREA_HEIGHT = 208
 
 /**
- * Capsule composer: always reachable at the bottom of the chat column.
- * Enter sends, Shift+Enter adds a line, the textarea grows and then scrolls.
+ * Composer: always reachable at the bottom of the chat column, above the phone's
+ * safe area. Enter sends, Shift+Enter adds a line, the textarea grows and then
+ * scrolls. The send control is the only filled element here, so "ready to send"
+ * is unmistakable; while work is running it becomes an explicit stop.
  */
 export function ChatComposer() {
   const { state, actions, derived } = useYAgent()
@@ -41,22 +43,30 @@ export function ChatComposer() {
     textareaRef.current?.focus()
   }
 
-  const voiceLabel = state.capabilities.voiceInput
+  const voiceSupported = state.capabilities.voiceInput
+  const voiceLabel = voiceSupported
     ? 'ورودی صوتی'
-    : 'ورودی صوتی در این نسخه فعال نیست (adapter پشتیبانی نمی‌کند)'
+    : 'ورودی صوتی در این نسخه پشتیبانی نمی‌شود — افزونهٔ وردپرس آن را فعال می‌کند'
 
   return (
-    <div className="border-t border-y-line bg-y-bg/95 px-3 pb-[max(0.7rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:px-5">
+    <div
+      className="shrink-0 border-t border-y-line bg-y-bg px-3 pt-3 sm:px-5"
+      style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+    >
       <div className="mx-auto w-full max-w-[var(--y-reading-w)]">
         <AttachmentChips attachments={composer.attachments} onRemove={actions.removeAttachment} />
 
         <div
           className={cn(
-            'rounded-y-2xl border bg-y-surface transition-[border-color,box-shadow] duration-y ease-y',
-            focused ? 'border-y-accent-border/60 shadow-y-soft' : 'border-y-line',
+            'rounded-y-xl border bg-y-surface transition-[border-color,box-shadow] duration-y ease-y',
+            focused ? 'border-y-accent-border shadow-y-soft' : 'border-y-line-strong',
           )}
         >
+          <label className="sr-only" htmlFor="yagent-composer">
+            پیام به YAgent
+          </label>
           <textarea
+            id="yagent-composer"
             ref={textareaRef}
             value={composer.text}
             rows={1}
@@ -71,14 +81,14 @@ export function ChatComposer() {
             }}
             placeholder="از YAgent بخواه روی سایتت کاری انجام بده…"
             className={cn(
-              'block min-h-[54px] w-full resize-none bg-transparent px-4 pb-1 pt-3.5 text-y-md leading-8 text-y-ink',
-              'outline-none placeholder:text-y-ink-dim/90',
+              'block min-h-[52px] w-full resize-none bg-transparent px-4 pb-1 pt-3 text-y-md text-y-ink',
+              'outline-none placeholder:text-y-ink-dim',
             )}
           />
 
           <div className="flex items-center gap-1 px-2 pb-2 pt-0.5">
             <Tooltip label="افزودن فایل">
-              <IconButton label="افزودن فایل" size="md" onClick={() => fileInputRef.current?.click()}>
+              <IconButton label="افزودن فایل" size="md" className="yagent-tap" onClick={() => fileInputRef.current?.click()}>
                 <Plus className="h-4 w-4" />
               </IconButton>
             </Tooltip>
@@ -89,7 +99,13 @@ export function ChatComposer() {
 
             <Tooltip label={voiceLabel}>
               <span className="inline-flex">
-                <IconButton label="ورودی صوتی" size="md" disabled={!state.capabilities.voiceInput}>
+                <IconButton
+                  label="ورودی صوتی"
+                  size="md"
+                  className="yagent-tap"
+                  disabled={!voiceSupported}
+                  aria-disabled={!voiceSupported}
+                >
                   <Mic className="h-4 w-4" />
                 </IconButton>
               </span>
@@ -99,7 +115,7 @@ export function ChatComposer() {
               <Button
                 variant="secondary"
                 shape="pill"
-                className="h-9 gap-2 border-y-line-strong px-3.5"
+                className="yagent-tap h-9 gap-2 border-y-line-strong px-3.5"
                 onClick={() => void actions.stop()}
               >
                 <Square className="h-3 w-3 fill-current" />
@@ -109,9 +125,8 @@ export function ChatComposer() {
               <Button
                 variant={derived.canSend ? 'primary' : 'secondary'}
                 shape="pill"
-                size="icon"
                 aria-label="ارسال پیام"
-                className={cn('h-9 w-9', !derived.canSend && 'border border-y-line text-y-ink-dim')}
+                className={cn('yagent-tap h-9 w-9', !derived.canSend && 'border border-y-line text-y-ink-dim')}
                 disabled={!derived.canSend}
                 onClick={() => void submit()}
               >
@@ -121,7 +136,7 @@ export function ChatComposer() {
           </div>
         </div>
 
-        <p className="mt-2 text-center text-y-xs leading-6 text-y-ink-dim/80">
+        <p className="mt-2 text-center text-y-xs text-y-ink-dim">
           نسخهٔ نمایشی با دادهٔ نمونه — YAgent پیش از هر تغییر روی سایت، تأیید تو را می‌گیرد.
         </p>
       </div>

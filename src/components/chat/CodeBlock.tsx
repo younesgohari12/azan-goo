@@ -30,8 +30,9 @@ export function CodeBlock({ code, language }: { code: string; language?: string 
         <button
           type="button"
           onClick={() => void copy()}
+          aria-label={copied ? 'کد کپی شد' : 'کپی کد'}
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-y-xs px-2 py-1 text-y-xs transition-colors duration-y-fast',
+            'yagent-tap inline-flex items-center gap-1.5 rounded-y-xs px-2 py-1 text-y-xs transition-colors duration-y-fast',
             copied ? 'text-y-success' : 'text-y-ink-dim hover:bg-y-surface-hover hover:text-y-ink',
           )}
         >

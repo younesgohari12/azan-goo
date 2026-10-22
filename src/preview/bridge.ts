@@ -11,7 +11,8 @@
  * Injected runtime responsibilities (inside the iframe):
  * - report readiness, page title, `data-yagent-id` list and document height
  * - draw pins / regions for the annotations the shell sends
- * - in annotate mode, capture click (pin) and drag (region) gestures
+ * - in annotate mode, capture a tap (pin) and a drag (region) — mouse, pen and
+ *   touch alike, through Pointer Events with capture and cancellation
  */
 
 export const HOST_SOURCE = 'yagent-host'
@@ -61,6 +62,7 @@ export type PreviewMessage =
   | { source: typeof PREVIEW_SOURCE; type: 'resize'; payload: { height: number } }
   | { source: typeof PREVIEW_SOURCE; type: 'created'; payload: BridgeAnnotationDraft }
   | { source: typeof PREVIEW_SOURCE; type: 'annotation:click'; payload: { annotationId: string } }
+  | { source: typeof PREVIEW_SOURCE; type: 'annotation:cancelled'; payload: null }
 
 export function isPreviewMessage(value: unknown): value is PreviewMessage {
   if (!value || typeof value !== 'object') return false
@@ -76,9 +78,10 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
   'use strict';
   var PREVIEW_SOURCE = 'yagent-preview';
   var HOST_SOURCE = 'yagent-host';
+  var DRAG_THRESHOLD = 7;
   var state = { mode: 'browse', annotations: [], selectedId: null };
   var layer = null;
-  var drag = null;
+  var gesture = null;
   var size = { width: 0, height: 0 };
   var origin = { x: 0, y: 0 };
   var lastHeight = 0;
@@ -106,8 +109,8 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
       '#yagent-layer{position:absolute;top:0;left:0;z-index:2147483000;pointer-events:none}',
       '.yagent-an{position:absolute;pointer-events:auto;box-sizing:border-box;cursor:pointer}',
       '.yagent-an--region{border:1.5px solid rgba(139,124,246,.85);border-radius:10px;background:rgba(139,124,246,.10)}',
-      '.yagent-an--pin{width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:#8b7cf6;color:#fff;',
-      'font:600 12px/26px Vazirmatn,system-ui,sans-serif;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.35)}',
+      '.yagent-an--pin{width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:#8b7cf6;color:#fff;',
+      'font:600 12px/28px Vazirmatn,system-ui,sans-serif;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.35)}',
       '.yagent-an__index{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;background:#8b7cf6;',
       'color:#fff;font:600 11px/22px Vazirmatn,system-ui,sans-serif;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.35)}',
       '.yagent-an--selected{border-color:#34d399;background:rgba(52,211,153,.12)}',
@@ -115,7 +118,10 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
       '.yagent-an--stale{opacity:.72;border-style:dashed}',
       '#yagent-draw{position:absolute;border:1.5px dashed #8b7cf6;background:rgba(139,124,246,.12);',
       'border-radius:8px;pointer-events:none}',
-      'body.yagent-annotating,body.yagent-annotating *{cursor:crosshair !important}'
+      'body.yagent-annotating,body.yagent-annotating *{cursor:crosshair !important}',
+      /* While marking, the page itself must not scroll — the gesture is the drawing.
+         In browse mode nothing here applies and the page scrolls normally. */
+      'html.yagent-annotating,body.yagent-annotating{touch-action:none !important;overscroll-behavior:none}'
     ].join('');
     (document.head || document.documentElement).appendChild(style);
     stylesInjected = true;
@@ -200,42 +206,82 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
     };
   }
 
-  function onMouseDown(event) {
-    if (state.mode !== 'annotate' || event.button !== 0) return;
-    event.preventDefault();
-    event.stopPropagation();
-    layout();
-    var point = normalize(event.clientX, event.clientY);
-    drag = { startX: event.clientX, startY: event.clientY, start: point, node: null, info: elementInfo(event.clientX, event.clientY) };
+  function isPrimary(event) {
+    if (event.pointerType === 'mouse' && event.button !== 0) return false;
+    return true;
   }
 
-  function onMouseMove(event) {
-    if (!drag || state.mode !== 'annotate') return;
-    var dx = Math.abs(event.clientX - drag.startX);
-    var dy = Math.abs(event.clientY - drag.startY);
-    if (!drag.node && dx + dy > 6) {
-      drag.node = document.createElement('div');
-      drag.node.id = 'yagent-draw';
-      ensureLayer().appendChild(drag.node);
+  function clearDragNode() {
+    if (gesture && gesture.node && gesture.node.parentNode) gesture.node.parentNode.removeChild(gesture.node);
+    var stray = document.getElementById('yagent-draw');
+    if (stray && stray.parentNode) stray.parentNode.removeChild(stray);
+  }
+
+  function cancelGesture(notify) {
+    if (!gesture) return;
+    var captured = gesture;
+    gesture = null;
+    clearDragNode();
+    if (captured.pointerId !== undefined && document.documentElement.releasePointerCapture) {
+      try { document.documentElement.releasePointerCapture(captured.pointerId); } catch (error) {}
     }
-    if (!drag.node) return;
-    drag.node.style.left = (Math.min(drag.startX, event.clientX) + window.scrollX - origin.x) + 'px';
-    drag.node.style.top = (Math.min(drag.startY, event.clientY) + window.scrollY - origin.y) + 'px';
-    drag.node.style.width = dx + 'px';
-    drag.node.style.height = dy + 'px';
+    if (notify) send('annotation:cancelled', null);
   }
 
-  function onMouseUp(event) {
-    if (!drag || state.mode !== 'annotate') return;
-    event.preventDefault();
+  function onPointerDown(event) {
+    if (state.mode !== 'annotate' || gesture || !isPrimary(event)) return;
+    layout();
+    gesture = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      start: normalize(event.clientX, event.clientY),
+      node: null,
+      info: elementInfo(event.clientX, event.clientY)
+    };
+    /* Capture on the root element: the gesture keeps tracking when the finger
+       leaves the original target, and we still get pointerup/pointercancel. */
+    if (document.documentElement.setPointerCapture && event.pointerId !== undefined) {
+      try { document.documentElement.setPointerCapture(event.pointerId); } catch (error) {}
+    }
+    if (event.cancelable) event.preventDefault();
     event.stopPropagation();
-    var ended = drag;
-    drag = null;
-    if (ended.node && ended.node.parentNode) ended.node.parentNode.removeChild(ended.node);
+  }
+
+  function onPointerMove(event) {
+    if (!gesture || event.pointerId !== gesture.pointerId || state.mode !== 'annotate') return;
+    var dx = Math.abs(event.clientX - gesture.startX);
+    var dy = Math.abs(event.clientY - gesture.startY);
+    if (!gesture.node && dx + dy > DRAG_THRESHOLD) {
+      gesture.node = document.createElement('div');
+      gesture.node.id = 'yagent-draw';
+      ensureLayer().appendChild(gesture.node);
+    }
+    if (!gesture.node) return;
+    gesture.node.style.left = (Math.min(gesture.startX, event.clientX) + window.scrollX - origin.x) + 'px';
+    gesture.node.style.top = (Math.min(gesture.startY, event.clientY) + window.scrollY - origin.y) + 'px';
+    gesture.node.style.width = dx + 'px';
+    gesture.node.style.height = dy + 'px';
+    if (event.cancelable) event.preventDefault();
+  }
+
+  function onPointerUp(event) {
+    if (!gesture || event.pointerId !== gesture.pointerId) return;
+    var ended = gesture;
     var end = normalize(event.clientX, event.clientY);
+    var dragged = Boolean(ended.node);
+    gesture = null;
+    clearDragNode();
+    if (document.documentElement.releasePointerCapture && event.pointerId !== undefined) {
+      try { document.documentElement.releasePointerCapture(event.pointerId); } catch (error) {}
+    }
+    if (state.mode !== 'annotate') return;
+    if (event.cancelable) event.preventDefault();
+    event.stopPropagation();
+
     var width = Math.abs(end.x - ended.start.x);
     var height = Math.abs(end.y - ended.start.y);
-    if (ended.node && (width > 0.004 || height > 0.004)) {
+    if (dragged && (width > 0.004 || height > 0.004)) {
       send('created', {
         kind: 'region',
         rect: {
@@ -247,14 +293,14 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
         elementId: ended.info && ended.info.elementId,
         elementLabel: ended.info && ended.info.elementLabel
       });
-    } else {
-      send('created', {
-        kind: 'pin',
-        rect: { x: ended.start.x, y: ended.start.y, width: 0, height: 0 },
-        elementId: ended.info && ended.info.elementId,
-        elementLabel: ended.info && ended.info.elementLabel
-      });
+      return;
     }
+    send('created', {
+      kind: 'pin',
+      rect: { x: ended.start.x, y: ended.start.y, width: 0, height: 0 },
+      elementId: ended.info && ended.info.elementId,
+      elementLabel: ended.info && ended.info.elementLabel
+    });
   }
 
   function onClickCapture(event) {
@@ -265,14 +311,19 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
 
   function onKeyDown(event) {
     if (event.key !== 'Escape' || state.mode !== 'annotate') return;
-    if (drag && drag.node && drag.node.parentNode) drag.node.parentNode.removeChild(drag.node);
-    drag = null;
-    send('annotation:cancelled', null);
+    cancelGesture(true);
   }
 
   function setMode(mode) {
     state.mode = mode === 'annotate' ? 'annotate' : 'browse';
-    if (document.body) document.body.classList[state.mode === 'annotate' ? 'add' : 'remove']('yagent-annotating');
+    var annotating = state.mode === 'annotate';
+    if (document.body) {
+      document.body.classList[annotating ? 'add' : 'remove']('yagent-annotating');
+    }
+    if (document.documentElement) {
+      document.documentElement.classList[annotating ? 'add' : 'remove']('yagent-annotating');
+    }
+    if (!annotating) cancelGesture(false);
   }
 
   function syncAnnotations(annotations) {
@@ -325,9 +376,13 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
     else if (data.type === 'select') selectAnnotation(data.annotationId);
   });
 
-  document.addEventListener('mousedown', onMouseDown, true);
-  document.addEventListener('mousemove', onMouseMove, true);
-  document.addEventListener('mouseup', onMouseUp, true);
+  document.addEventListener('pointerdown', onPointerDown, true);
+  document.addEventListener('pointermove', onPointerMove, true);
+  document.addEventListener('pointerup', onPointerUp, true);
+  document.addEventListener('pointercancel', function () { cancelGesture(false); }, true);
+  document.addEventListener('lostpointercapture', function (event) {
+    if (gesture && gesture.pointerId === event.pointerId) cancelGesture(false);
+  }, true);
   document.addEventListener('click', onClickCapture, true);
   document.addEventListener('keydown', onKeyDown, true);
   window.addEventListener('resize', reportSize);

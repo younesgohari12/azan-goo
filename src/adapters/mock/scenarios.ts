@@ -42,15 +42,16 @@ export interface ScenarioPlan {
   steps: StepPlan[]
   pageId?: string
   pageTitle?: string
-  result?: { title: string; message: string; linkLabel?: string; technical?: Array<{ label: string; value: string }> }
+  result?: { title: string; message: string; technical?: Array<{ label: string; value: string }> }
   failure?: { title: string; message: string; technical?: Array<{ label: string; value: string }> }
 }
 
 const PUBLISH_APPROVAL: StepApprovalPlan = {
   kind: 'publish_page',
-  title: 'انتشار صفحه',
+  title: 'انتشار آزمایشی صفحه',
   target: 'صفحهٔ فرود — استودیو آرا',
-  summary: 'نسخهٔ پیش‌نویس روی سایت منتشر می‌شود و برای بازدیدکنندگان قابل مشاهده است.',
+  summary:
+    'نسخهٔ پیش‌نویس منتشر می‌شود. در این نسخهٔ نمایشی انتشار فقط داخل همین محیط ثبت می‌شود و روی سایت واقعی چیزی تغییر نمی‌کند.',
   changes: [
     'محتوای صفحهٔ اصلی با نسخهٔ جدید جایگزین می‌شود',
     'تصویر شاخص و متادیتای سئو به‌روزرسانی می‌شود',
@@ -62,7 +63,8 @@ const INSTALL_APPROVAL: StepApprovalPlan = {
   kind: 'install_plugin',
   title: 'نصب افزونه',
   target: 'YAgent — رزرو نوبت',
-  summary: 'افزونه روی سایت نصب و فعال می‌شود؛ یک جدول تازه در دیتابیس ساخته خواهد شد.',
+  summary:
+    'افزونه روی سایت نصب و فعال می‌شود؛ یک جدول تازه در دیتابیس ساخته خواهد شد. در نسخهٔ نمایشی این عملیات شبیه‌سازی می‌شود.',
   changes: [
     'افزونه از مخزن YAgent نصب می‌شود',
     'یک جدول دیتابیس برای نوبت‌ها ساخته می‌شود',
@@ -314,7 +316,6 @@ export function scenarioFor(text: string, context: ScenarioContext = {}): Scenar
       result: {
         title: 'افزونه نصب و فعال شد',
         message: 'کد کوتاه `[yagent_booking]` را در هر برگه‌ای که می‌خواهی قرار بده.',
-        linkLabel: 'مشاهدهٔ برگهٔ رزرو نوبت',
         technical: [
           { label: 'افزونه', value: 'yagent-booking 1.0.0' },
           { label: 'شناسهٔ نصب', value: 'plg_c41a' },
@@ -333,7 +334,6 @@ export function scenarioFor(text: string, context: ScenarioContext = {}): Scenar
       result: {
         title: 'گزارش بررسی سرعت آماده شد',
         message: '۷ پیشنهاد اولویت‌دار برای رساندن امتیاز از ۵۴ به ۸۸ ثبت شد.',
-        linkLabel: 'مشاهدهٔ گزارش',
         technical: [
           { label: 'ابزار', value: 'yagent-audit 0.9' },
           { label: 'مدت بررسی', value: '۵.۱ ثانیه' },
@@ -353,8 +353,7 @@ export function scenarioFor(text: string, context: ScenarioContext = {}): Scenar
       pageTitle,
       result: {
         title: 'صفحه منتشر شد',
-        message: `«${pageTitle}» روی سایت منتشر شد و نسخهٔ قبلی در تاریخچه باقی ماند.`,
-        linkLabel: 'مشاهدهٔ صفحه در سایت',
+        message: `«${pageTitle}» به‌صورت آزمایشی منتشر شد و نسخهٔ قبلی در تاریخچه باقی ماند.`,
         technical: [
           { label: 'شناسهٔ انتشار', value: 'pub_8f31c2' },
           { label: 'زمان پاسخ', value: '۰.۹ ثانیه' },
@@ -388,7 +387,6 @@ export function feedbackPlan(pageId: string, pageTitle: string): ScenarioPlan {
     result: {
       title: 'نسخهٔ جدید آماده شد',
       message: 'نسخهٔ تازه ساخته شد؛ می‌توانی آن را با نسخهٔ قبلی مقایسه کنی یا منتشرش کنی.',
-      linkLabel: 'بازکردن پیش‌نمایش',
       technical: [{ label: 'نسخهٔ مبنا', value: 'نسخهٔ قبلی همین صفحه' }],
     },
   }

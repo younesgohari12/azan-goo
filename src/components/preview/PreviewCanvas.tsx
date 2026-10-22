@@ -2,17 +2,30 @@ import { useCallback, useMemo } from 'react'
 
 import { AnnotationLayer } from './AnnotationLayer'
 import { Badge } from '@/components/ui/badge'
+import { useElementSize } from '@/hooks/useElementSize'
 import { cn, fa } from '@/lib/utils'
 import { useYAgent } from '@/state/YAgentProvider'
 import type { BridgeAnnotation, BridgeAnnotationDraft, PreviewMode } from '@/preview/bridge'
 import type { PreviewRevision } from '@/types/model'
 
+const FRAME_GAP = 16
+/** Below this, two frames side by side stop being readable — stack them instead. */
+const MIN_SIDE_BY_SIDE = 760
+
 /**
- * The preview surface: the current revision at its real width, plus — when the
- * user picks an older revision — a side-by-side comparison of the two.
+ * The preview surface: the current revision rendered at its real device width,
+ * plus — when the user picks an older revision — the two side by side.
+ *
+ * The device frame is laid out at the width the user selected and shrunk with a
+ * display-only CSS scale when "fit" is on. The scale never touches the iframe's
+ * own viewport (the iframe is still `width` CSS pixels wide inside), so a pin
+ * drawn at 60% of the page is stored at 60% of the page, and the annotation
+ * coordinates stay correct at every zoom level. Comparison also keeps both
+ * frames at the selected device width instead of halving it.
  */
 export function PreviewCanvas({ frameKey }: { frameKey: number }) {
   const { state, actions, derived } = useYAgent()
+  const { ref: canvasRef, size: canvas } = useElementSize<HTMLDivElement>()
   const revision = derived.currentRevision
   const compareRevision = state.preview.compareRevisionId
     ? state.revisions[state.preview.compareRevisionId]
@@ -34,10 +47,7 @@ export function PreviewCanvas({ frameKey }: { frameKey: number }) {
       }))
   }, [revision, state.annotations, state.preview.selectedAnnotationId])
 
-  const handleCreated = useCallback(
-    (draft: BridgeAnnotationDraft) => actions.addBridgeAnnotation(draft),
-    [actions],
-  )
+  const handleCreated = useCallback((draft: BridgeAnnotationDraft) => actions.addBridgeAnnotation(draft), [actions])
   const handleClick = useCallback((id: string) => actions.selectAnnotation(id), [actions])
   const handleResize = useCallback((height: number) => actions.reportPreviewHeight(height), [actions])
 
@@ -45,57 +55,72 @@ export function PreviewCanvas({ frameKey }: { frameKey: number }) {
 
   if (!revision) {
     return (
-      <div className="flex h-full items-center justify-center px-6 text-center text-y-base text-y-ink-muted">
+      <div className="flex h-full min-h-0 items-center justify-center px-6 text-center text-y-base text-y-ink-muted">
         نسخه‌ای از این صفحه موجود نیست.
       </div>
     )
   }
 
   const comparing = Boolean(compareRevision && compareRevision.id !== revision.id)
+  const deviceWidth = state.preview.width
+  const columnWidth = Math.max(320, canvas.width - 32 - (comparing ? FRAME_GAP : 0))
+  const stacked = comparing && columnWidth < MIN_SIDE_BY_SIDE
+  const perFrame = comparing && !stacked ? Math.floor(columnWidth / 2) : columnWidth
+  const scale = state.preview.zoom === 'actual' ? 1 : Math.min(1, perFrame / deviceWidth)
+  const frameHeight = Math.max(320, Math.round(canvas.height - 104))
 
   return (
-    <div className="yagent-canvas-bg flex h-full min-h-0 w-full justify-center gap-4 overflow-auto p-4">
-      <PreviewFrame
-        revision={revision}
-        badge="نسخهٔ فعلی"
-        width={comparing ? Math.max(360, Math.floor(state.preview.width / 2)) : state.preview.width}
-        mode={mode}
-        annotations={bridgeAnnotations}
-        selectedAnnotationId={state.preview.selectedAnnotationId}
-        frameKey={frameKey}
-        onReady={() => undefined}
-        onResize={handleResize}
-        onAnnotationCreated={handleCreated}
-        onAnnotationClick={handleClick}
-        highlight
-      />
-
-      {comparing && compareRevision ? (
-        <PreviewFrame
-          revision={compareRevision}
-          badge={`نسخهٔ ${fa(compareRevision.revision)}`}
-          width={Math.max(360, Math.floor(state.preview.width / 2))}
-          mode="browse"
-          annotations={[]}
+    <div ref={canvasRef} className="yagent-canvas-bg h-full min-h-0 w-full overflow-auto p-4">
+      <div
+        className={cn(
+          'flex min-h-full w-full items-start justify-center',
+          stacked ? 'flex-col items-center gap-4' : 'flex-row gap-4',
+        )}
+      >
+        <DeviceFrame
+          revision={revision}
+          badge="نسخهٔ فعلی"
+          deviceWidth={deviceWidth}
+          scale={scale}
+          frameHeight={frameHeight}
+          mode={mode}
+          annotations={bridgeAnnotations}
+          selectedAnnotationId={state.preview.selectedAnnotationId}
           frameKey={frameKey}
-          onReady={() => undefined}
-          onResize={() => undefined}
-          interactive={false}
+          onResize={handleResize}
+          onAnnotationCreated={handleCreated}
+          onAnnotationClick={handleClick}
+          highlight
         />
-      ) : null}
+
+        {comparing && compareRevision ? (
+          <DeviceFrame
+            revision={compareRevision}
+            badge={`نسخهٔ ${fa(compareRevision.revision)}`}
+            deviceWidth={deviceWidth}
+            scale={scale}
+            frameHeight={frameHeight}
+            mode="browse"
+            annotations={[]}
+            frameKey={frameKey}
+            interactive={false}
+          />
+        ) : null}
+      </div>
     </div>
   )
 }
 
-function PreviewFrame({
+function DeviceFrame({
   revision,
   badge,
-  width,
+  deviceWidth,
+  scale,
+  frameHeight,
   mode,
   annotations,
   selectedAnnotationId,
   frameKey,
-  onReady,
   onResize,
   onAnnotationCreated,
   onAnnotationClick,
@@ -104,23 +129,24 @@ function PreviewFrame({
 }: {
   revision: PreviewRevision
   badge: string
-  width: number
+  deviceWidth: number
+  scale: number
+  frameHeight: number
   mode: PreviewMode
   annotations: BridgeAnnotation[]
   selectedAnnotationId?: string
   frameKey: number
-  onReady: () => void
-  onResize: (height: number) => void
+  onResize?: (height: number) => void
   onAnnotationCreated?: (draft: BridgeAnnotationDraft) => void
   onAnnotationClick?: (id: string) => void
   interactive?: boolean
   highlight?: boolean
 }) {
   return (
-    <div className="flex shrink-0 flex-col gap-2" style={{ width }}>
-      <div className="flex items-center justify-between gap-2 px-1">
-        <span className="truncate text-y-xs text-y-ink-dim">{revision.pageTitle}</span>
-        <span className="flex items-center gap-2">
+    <div className="shrink-0" style={{ width: Math.round(deviceWidth * scale) }}>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="truncate text-y-xs text-y-ink-muted">{revision.pageTitle}</span>
+        <span className="flex shrink-0 items-center gap-2">
           <Badge variant={revision.status === 'published' ? 'success' : 'neutral'}>{badge}</Badge>
           <Badge variant={revision.status === 'published' ? 'plain' : 'accent'}>
             {revision.status === 'published' ? 'منتشرشده' : 'پیش‌نویس'}
@@ -130,23 +156,37 @@ function PreviewFrame({
 
       <div
         className={cn(
-          'min-h-0 flex-1 overflow-hidden rounded-y-md border bg-white shadow-y-soft',
+          'overflow-hidden rounded-y-md border bg-white shadow-y-soft',
           highlight && mode === 'annotate' ? 'border-y-accent-border' : 'border-y-line-strong',
         )}
+        style={{ height: Math.round(frameHeight * scale) }}
       >
-        <AnnotationLayer
-          revision={revision}
-          mode={mode}
-          annotations={annotations}
-          selectedAnnotationId={selectedAnnotationId}
-          nonce={frameKey}
-          interactive={interactive}
-          onReady={onReady}
-          onResize={onResize}
-          onAnnotationCreated={onAnnotationCreated}
-          onAnnotationClick={onAnnotationClick}
-        />
+        <div
+          style={{
+            width: deviceWidth,
+            height: frameHeight,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+          }}
+        >
+          <AnnotationLayer
+            revision={revision}
+            mode={mode}
+            annotations={annotations}
+            selectedAnnotationId={selectedAnnotationId}
+            nonce={frameKey}
+            interactive={interactive}
+            onResize={onResize}
+            onAnnotationCreated={onAnnotationCreated}
+            onAnnotationClick={onAnnotationClick}
+          />
+        </div>
       </div>
+
+      <p className="mt-1.5 text-center text-y-xs text-y-ink-dim">
+        {fa(deviceWidth)} × {fa(frameHeight)} پیکسل
+        {scale < 1 ? ` — نمایش با ${fa(Math.round(scale * 100))}٪` : ''}
+      </p>
     </div>
   )
 }

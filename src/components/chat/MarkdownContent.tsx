@@ -16,29 +16,39 @@ function extractText(node: unknown): string {
   return ''
 }
 
+/**
+ * Assistant prose. Sizes come from the type scale (the token carries the Persian
+ * line-height), and the reset lives in the base layer, so `list-disc`,
+ * `list-decimal` and `ps-5` actually reach the output: bullets and numbers are
+ * visible again, paragraphs and headings keep their rhythm.
+ */
 const components: Components = {
-  p: ({ children }) => <p className="my-2.5 text-y-base leading-8 text-y-ink/95">{children}</p>,
+  p: ({ children }) => <p className="my-2.5 text-y-md text-y-ink">{children}</p>,
   h1: ({ children }) => <h1 className="mb-2 mt-5 text-y-xl font-semibold text-y-ink">{children}</h1>,
   h2: ({ children }) => <h2 className="mb-2 mt-5 text-y-lg font-semibold text-y-ink">{children}</h2>,
   h3: ({ children }) => <h3 className="mb-1.5 mt-4 text-y-md font-semibold text-y-ink">{children}</h3>,
   h4: ({ children }) => <h4 className="mb-1.5 mt-3 text-y-base font-semibold text-y-ink">{children}</h4>,
-  ul: ({ children }) => <ul className="my-2.5 list-disc space-y-1.5 ps-5 text-y-base leading-8">{children}</ul>,
-  ol: ({ children }) => <ol className="my-2.5 list-decimal space-y-1.5 ps-5 text-y-base leading-8">{children}</ol>,
+  ul: ({ children }) => (
+    <ul className="my-2.5 list-disc space-y-1.5 ps-5 text-y-md text-y-ink">{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="my-2.5 list-decimal space-y-1.5 ps-5 text-y-md text-y-ink">{children}</ol>
+  ),
   li: ({ children }) => <li className="marker:text-y-ink-dim">{children}</li>,
   strong: ({ children }) => <strong className="font-semibold text-y-ink">{children}</strong>,
-  em: ({ children }) => <em className="italic text-y-ink/90">{children}</em>,
+  em: ({ children }) => <em className="italic">{children}</em>,
   a: ({ children, href }) => (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="yagent-ltr inline break-all text-y-accent underline decoration-y-accent/40 underline-offset-2 transition-colors duration-y-fast hover:text-y-accent-hover"
+      className="yagent-ltr inline break-words text-y-accent underline decoration-y-accent/50 underline-offset-2 transition-colors duration-y-fast hover:text-y-accent-hover"
     >
       {children}
     </a>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="my-3 border-s-2 border-y-accent-border ps-3 text-y-base text-y-ink-muted">
+    <blockquote className="my-3 border-s-2 border-y-accent-border ps-3 text-y-md text-y-ink-muted">
       {children}
     </blockquote>
   ),
@@ -56,7 +66,7 @@ const components: Components = {
     return <CodeBlock code={code} language={language} />
   },
   table: ({ children }) => (
-    <div className="yagent-scroll my-3 overflow-x-auto rounded-y-md border border-y-line">
+    <div className="yagent-scroll my-3 overflow-x-auto overscroll-x-contain rounded-y-md border border-y-line">
       <table className="w-full min-w-[26rem] border-collapse text-y-sm">{children}</table>
     </div>
   ),
@@ -65,7 +75,7 @@ const components: Components = {
     <th className="border-b border-y-line px-3 py-2 text-start font-medium text-y-ink-muted">{children}</th>
   ),
   td: ({ children }) => (
-    <td className="border-b border-y-line px-3 py-2 text-start align-top text-y-ink/90">{children}</td>
+    <td className="border-b border-y-line px-3 py-2 text-start align-top text-y-ink-muted">{children}</td>
   ),
 }
 

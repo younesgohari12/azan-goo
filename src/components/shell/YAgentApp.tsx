@@ -1,36 +1,54 @@
 import { MotionConfig } from 'framer-motion'
-import { MessageSquare, MonitorPlay, PanelLeftOpen, PanelRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 
 import { TaskPanel } from '@/components/activity/TaskPanel'
 import { ChatComposer } from '@/components/chat/ChatComposer'
 import { ChatThread } from '@/components/chat/ChatThread'
-import { PreviewWorkspace } from '@/components/preview/PreviewWorkspace'
-import { ChatSidebar, YAgentMark } from '@/components/sidebar/ChatSidebar'
-import { Button, IconButton } from '@/components/ui/button'
+import { ChatHeader, type ChatView } from '@/components/shell/ChatHeader'
+import { ChatSidebar } from '@/components/sidebar/ChatSidebar'
+import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, Sheet } from '@/components/ui/dialog'
-import { Segmented } from '@/components/ui/segmented'
+import { Spinner } from '@/components/ui/feedback'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useIsDesktop, useIsWide } from '@/hooks/useMediaQuery'
 import { cn } from '@/lib/utils'
 import { useYAgent } from '@/state/YAgentProvider'
 
+// The preview workspace (iframe bridge + preview document builder) is only
+// needed once a preview is opened, so it is split out of the initial bundle.
+const PreviewWorkspace = lazy(() =>
+  import('@/components/preview/PreviewWorkspace').then((module) => ({ default: module.PreviewWorkspace })),
+)
+
+function PreviewFallback() {
+  return (
+    <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center gap-2 bg-y-bg text-y-sm text-y-ink-muted">
+      <Spinner size={15} />
+      در حال آماده‌سازی پیش‌نمایش…
+    </div>
+  )
+}
+
 /**
  * Product shell.
  *
- * Desktop: conversations on the right, chat in the middle, work plan on the left
- * (three independently scrolling columns).
- * Preview mode: history collapses to a rail, the chat narrows, the canvas takes
- * the room and the plan becomes a collapsible drawer.
- * Mobile: the same pieces as drawers plus a chat/preview tab switch.
+ * One column is the base layout: on phones and tablets the header sits on top at
+ * full width and the chat column below it flexes with `min-height: 0`, so the
+ * thread scrolls and the composer stays on screen. The earlier version kept the
+ * root as a row at every width, which pushed the header next to the chat and cut
+ * the composer off the left edge of a 390px screen.
+ *
+ * From 1024px up the same pieces become columns; from 1280px up the work plan
+ * docks beside the chat. Below that, the plan and the history are drawers — so
+ * both panels can always be closed and reopened, at every breakpoint.
  */
 export function YAgentApp() {
-  const { state, actions, derived } = useYAgent()
+  const { state, actions } = useYAgent()
   const isDesktop = useIsDesktop()
   const isWide = useIsWide()
-  const [sidebarSheet, setSidebarSheet] = useState(false)
-  const [panelSheet, setPanelSheet] = useState(false)
-  const [mobileView, setMobileView] = useState<'chat' | 'preview'>('chat')
+  const [historySheet, setHistorySheet] = useState(false)
+  const [railHistory, setRailHistory] = useState(false)
+  const [mobileView, setMobileView] = useState<ChatView>('chat')
 
   const previewOpen = state.preview.open
 
@@ -39,26 +57,78 @@ export function YAgentApp() {
     if (!previewOpen) setMobileView('chat')
   }, [previewOpen, isDesktop])
 
+  // The plan docks only where three columns genuinely fit; on every narrower
+  // layout it is a drawer, and it must start closed instead of covering the chat.
+  useEffect(() => {
+    if (!isWide && state.panelOpen) actions.setPanel({ open: false })
+    // Keyed on the breakpoint only: re-running whenever `panelOpen` changes would
+    // immediately close the drawer the user just opened.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWide])
+
+  // Notes are written in the feedback panel. Where that panel is a drawer, bring
+  // it up as soon as a note is placed or picked, so the comment field is reachable.
+  useEffect(() => {
+    if (!state.preview.selectedAnnotationId) return
+    if (isWide && !state.preview.annotate) return
+    actions.setPanel({ open: true, tab: 'feedback' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.preview.selectedAnnotationId, state.preview.annotate, isWide])
+
   const railForced = previewOpen && !isWide
   const sidebarCollapsed = state.sidebarCollapsed || railForced
-  const panelDocked = isDesktop && state.panelOpen && (!previewOpen || isWide)
+  const showRail = isDesktop && sidebarCollapsed
+  const panelDocked = isDesktop && isWide && state.panelOpen
+  const panelDrawer = state.panelOpen && !panelDocked
+
+  const openHistory = () => {
+    if (!isDesktop) {
+      setHistorySheet(true)
+      return
+    }
+    setRailHistory(true)
+  }
 
   const historyColumn = (
     <ChatSidebar
-      collapsed={sidebarCollapsed && isDesktop}
-      onToggleCollapse={isDesktop ? () => actions.toggleSidebar() : undefined}
-      onSelectConversation={() => setSidebarSheet(false)}
+      collapsed={showRail}
+      onToggleCollapse={isDesktop ? (showRail ? openHistory : () => actions.toggleSidebar()) : undefined}
+      onSelectConversation={() => {
+        setHistorySheet(false)
+        setRailHistory(false)
+      }}
     />
   )
 
-  const panelColumn = <TaskPanel onCollapse={isDesktop ? () => actions.setPanel({ open: false }) : undefined} />
+  const chatHeader = (
+    <ChatHeader
+      onOpenHistory={isDesktop ? undefined : openHistory}
+      showViewSwitch={!isDesktop && previewOpen}
+      view={mobileView}
+      onViewChange={setMobileView}
+      onTogglePanel={() => actions.setPanel({ open: !state.panelOpen })}
+    />
+  )
+
+  const chatBody = (
+    <>
+      <ChatThread />
+      <ChatComposer />
+    </>
+  )
+
+  const panelColumn = (
+    <TaskPanel hideHeader onCollapse={panelDocked ? () => actions.setPanel({ open: false }) : undefined} />
+  )
+
+  const showingMobilePreview = !isDesktop && previewOpen && mobileView === 'preview'
 
   return (
     <MotionConfig reducedMotion="user">
       <TooltipProvider>
-        <div className="yagent-root flex h-[100dvh] w-full overflow-hidden bg-y-bg" dir="rtl">
+        <div className="yagent-root flex h-[100dvh] max-h-[100dvh] w-full flex-col overflow-hidden bg-y-bg" dir="rtl">
           {isDesktop ? (
-            <>
+            <div className="flex min-h-0 min-w-0 flex-1 flex-row">
               <div
                 className={cn(
                   'shrink-0 border-s border-y-line transition-[width] duration-y-slow ease-y',
@@ -68,76 +138,75 @@ export function YAgentApp() {
                 {historyColumn}
               </div>
 
-              <main
-                className={cn(
-                  'flex min-h-0 min-w-0 flex-col',
-                  previewOpen ? 'w-[24rem] shrink-0 border-s border-y-line xl:w-[26rem]' : 'flex-1',
-                )}
-              >
-                <ChatThread />
-                <ChatComposer />
-              </main>
-
-              {previewOpen ? <PreviewWorkspace /> : null}
+              {previewOpen ? (
+                <>
+                  <main className="flex min-h-0 w-[23rem] min-w-0 shrink-0 flex-col border-s border-y-line xl:w-[26rem]">
+                    {chatHeader}
+                    {chatBody}
+                  </main>
+                  <Suspense fallback={<PreviewFallback />}>
+                    <PreviewWorkspace />
+                  </Suspense>
+                </>
+              ) : (
+                <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+                  {chatHeader}
+                  {chatBody}
+                </main>
+              )}
 
               {panelDocked ? (
-                <div className="w-[var(--y-panel-w)] shrink-0 border-e border-y-line">{panelColumn}</div>
+                <div className="flex w-[var(--y-panel-w)] shrink-0 flex-col border-e border-y-line">{panelColumn}</div>
               ) : null}
-            </>
+            </div>
           ) : (
             <>
-              <header className="flex items-center gap-1.5 border-b border-y-line bg-y-sidebar px-2 py-2">
-                <IconButton label="تاریخچهٔ گفتگوها" size="md" onClick={() => setSidebarSheet(true)}>
-                  <PanelRight className="h-4 w-4" />
-                </IconButton>
-                <YAgentMark className="h-7 w-7" />
-                <div className="min-w-0 flex-1">
-                  <div className="yagent-ltr truncate text-start text-y-md font-semibold text-y-ink">YAgent</div>
-                  <div className="truncate text-y-xs text-y-ink-dim">
-                    {derived.activeConversation?.title ?? 'دستیار وردپرس'}
-                  </div>
-                </div>
-                {previewOpen ? (
-                  <Segmented
-                    size="sm"
-                    value={mobileView}
-                    onChange={setMobileView}
-                    options={[
-                      { value: 'chat', label: 'چت', icon: <MessageSquare className="h-3.5 w-3.5" /> },
-                      { value: 'preview', label: 'پیش‌نمایش', icon: <MonitorPlay className="h-3.5 w-3.5" /> },
-                    ]}
-                  />
-                ) : null}
-                <IconButton label="مراحل انجام کار" size="md" onClick={() => setPanelSheet(true)}>
-                  <PanelLeftOpen className="h-4 w-4" />
-                </IconButton>
-              </header>
-
-              <div className="flex min-h-0 flex-1 flex-col">
-                {previewOpen && mobileView === 'preview' ? (
-                  <PreviewWorkspace />
+              {chatHeader}
+              <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                {showingMobilePreview ? (
+                  <Suspense fallback={<PreviewFallback />}>
+                    <PreviewWorkspace />
+                  </Suspense>
                 ) : (
-                  <>
-                    <ChatThread />
-                    <ChatComposer />
-                  </>
+                  chatBody
                 )}
               </div>
             </>
           )}
 
-          {/* Mobile drawers */}
+          {/* History: the mobile drawer, and the desktop rail's overlay for when
+              the preview forces the sidebar into its rail form. */}
           <Sheet
-            open={sidebarSheet}
-            onOpenChange={setSidebarSheet}
+            open={historySheet}
+            onOpenChange={setHistorySheet}
             side="right"
             title="تاریخچهٔ گفتگوها"
             className="bg-y-sidebar"
           >
-            <ChatSidebar onSelectConversation={() => setSidebarSheet(false)} />
+            <ChatSidebar onSelectConversation={() => setHistorySheet(false)} />
           </Sheet>
-          <Sheet open={panelSheet} onOpenChange={setPanelSheet} side="left" title="مراحل انجام کار">
-            <TaskPanel />
+          <Sheet
+            open={railHistory}
+            onOpenChange={setRailHistory}
+            side="right"
+            title="تاریخچهٔ گفتگوها"
+            className="bg-y-sidebar"
+          >
+            <ChatSidebar
+              onToggleCollapse={() => setRailHistory(false)}
+              onSelectConversation={() => setRailHistory(false)}
+            />
+          </Sheet>
+
+          {/* Work plan + feedback: a drawer wherever it is not docked. */}
+          <Sheet
+            open={panelDrawer}
+            onOpenChange={(open) => actions.setPanel({ open })}
+            side="left"
+            title="مراحل انجام کار"
+            className="bg-y-bg-elevated"
+          >
+            <TaskPanel hideHeader />
           </Sheet>
         </div>
 
