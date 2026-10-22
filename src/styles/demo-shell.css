@@ -1,0 +1,18 @@
+/*
+ * Demo shell only — NOT part of the YAgent product surface.
+ *
+ * The product styles live in globals.css and are scoped to `.yagent-root`.
+ * These few rules just size the standalone demo page (the WordPress port drops
+ * this file and mounts <YAgentApp /> inside the admin page container instead).
+ */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #141416;
+  color: #ececf0;
+}

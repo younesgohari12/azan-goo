@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+.vite
+*.local
+.DS_Store
+
+# never commit generated source archives
+*.zip
+
+# env files: Base44 delivers secrets through /run/base44/app.env (outside the repo)
+.env
+.env.*
+!.env.base44-defaults
