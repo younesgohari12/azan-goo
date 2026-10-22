@@ -1,0 +1,57 @@
+# YAgent UI — development environment.
+#
+# Runs the app from the cloned source with Vite's dev server (live reload), so
+# edits are visible immediately. There is no database, no auth service and no AI
+# backend: the demo runs entirely against the in-memory mock adapter
+# (src/adapters/mock), which is why no secrets are required.
+#
+#   docker compose -f docker-compose.base44.yml up -d --build
+#   open http://localhost:3000/
+name: yagent
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    working_dir: /app
+    # Dependencies live in a named volume (so they survive restarts), therefore
+    # they are synced from the current lockfile on every start, then the dev
+    # server takes over. `exec` keeps the server as PID 1 for clean shutdown.
+    command:
+      - sh
+      - -ec
+      - |
+        CI=true npm ci --no-audit --no-fund
+        exec npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      # The user-facing entry point must stay on host port 3000.
+      - "3000:5173"
+    volumes:
+      - .:/app
+      - yagent_node_modules:/app/node_modules
+    environment:
+      - CI=true
+      # Base44 sandbox wiring: the platform sets these; Vite uses the sandbox
+      # domain for its Host allowlist and the extra-hosts variable below.
+      - BASE44_PREVIEW_MODE
+      - BASE44_PUBLIC_HOST_SUFFIX
+      - BASE44_SANDBOX_HOST_DOMAIN
+      # Bare pass-through: the platform fills it with the preview host so the
+      # Vite dev server (>= 6.1) accepts the proxied Host header.
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
+    healthcheck:
+      # Probes the dev server itself: it must answer the app shell on /.
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:5173/ >/dev/null || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+    restart: on-failure
+    labels:
+      base44.project: "YAgent UI"
+      base44.kind: "web"
+      base44.port: "3000"
+
+volumes:
+  yagent_node_modules:

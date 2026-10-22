@@ -1,0 +1,251 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================================================
+   YAgent design tokens
+   -----------------------------------------------------------------------------
+   Every colour, radius, space and type value used by the UI lives here, scoped
+   to `.yagent-root`. Moving the interface into the WordPress plugin therefore
+   only means mounting the React tree inside `.yagent-root` — no global CSS, and
+   no leakage into the host admin styles (nor the other way around).
+   ============================================================================= */
+.yagent-root {
+  /* surfaces */
+  --y-bg: #141416;
+  --y-bg-elevated: #17171a;
+  --y-sidebar: #101012;
+  --y-surface: #202024;
+  --y-surface-soft: #1b1b1f;
+  --y-surface-hover: #232329;
+
+  /* lines */
+  --y-border: rgba(255, 255, 255, 0.06);
+  --y-border-strong: rgba(255, 255, 255, 0.11);
+
+  /* type */
+  --y-text: #ececf0;
+  --y-text-muted: #a0a0ab;
+  --y-text-dim: #71717c;
+
+  /* accents */
+  --y-accent: #8b7cf6;
+  --y-accent-hover: #9c8ff9;
+  --y-accent-soft: rgba(139, 124, 246, 0.13);
+  --y-accent-border: rgba(139, 124, 246, 0.38);
+
+  --y-success: #34d399;
+  --y-success-soft: rgba(52, 211, 153, 0.12);
+  --y-warn: #e0a93a;
+  --y-warn-soft: rgba(224, 169, 58, 0.13);
+  --y-danger: #f0605f;
+  --y-danger-soft: rgba(240, 96, 95, 0.12);
+
+  /* geometry */
+  --y-radius-xs: 6px;
+  --y-radius-sm: 9px;
+  --y-radius-md: 12px;
+  --y-radius-lg: 16px;
+  --y-radius-xl: 22px;
+  --y-radius-2xl: 28px;
+
+  /* elevation */
+  --y-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px -18px rgba(0, 0, 0, 0.7);
+  --y-shadow-pop: 0 16px 40px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
+
+  /* motion — short, quiet, predictable */
+  --y-dur-fast: 150ms;
+  --y-dur: 190ms;
+  --y-dur-slow: 220ms;
+  --y-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* layout */
+  --y-sidebar-w: 260px;
+  --y-sidebar-rail-w: 72px;
+  --y-panel-w: 300px;
+  --y-reading-w: 46rem;
+  --y-header-h: 56px;
+
+  font-family: 'Vazirmatn Variable', Vazirmatn, 'Segoe UI', Tahoma, system-ui, -apple-system, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--y-text);
+  background-color: var(--y-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* -----------------------------------------------------------------------------
+   Scoped reset.
+   Replaces Tailwind's global preflight (disabled in tailwind.config.js) so the
+   widget never resets body, buttons or inputs belonging to the host page.
+   -------------------------------------------------------------------------- */
+.yagent-root,
+.yagent-root *,
+.yagent-root *::before,
+.yagent-root *::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--y-border);
+}
+
+.yagent-root h1,
+.yagent-root h2,
+.yagent-root h3,
+.yagent-root h4,
+.yagent-root p,
+.yagent-root figure,
+.yagent-root blockquote,
+.yagent-root dl,
+.yagent-root dd {
+  margin: 0;
+}
+
+.yagent-root ul,
+.yagent-root ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.yagent-root button,
+.yagent-root input,
+.yagent-root textarea,
+.yagent-root select {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.yagent-root button {
+  cursor: pointer;
+}
+
+.yagent-root button:disabled {
+  cursor: not-allowed;
+}
+
+.yagent-root textarea {
+  resize: none;
+}
+
+.yagent-root a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.yagent-root img,
+.yagent-root svg,
+.yagent-root video {
+  display: block;
+  max-width: 100%;
+}
+
+.yagent-root :focus-visible {
+  outline: 2px solid var(--y-accent-border);
+  outline-offset: 2px;
+}
+
+.yagent-root ::selection {
+  background: var(--y-accent-soft);
+  color: var(--y-text);
+}
+
+/* quiet, controlled scroll areas */
+.yagent-root * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.13) transparent;
+}
+
+.yagent-root ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.yagent-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.yagent-root ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.11);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.yagent-root ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+  background-clip: content-box;
+}
+
+.yagent-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Latin runs inside an RTL interface: URLs, code, ids, versions */
+.yagent-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
+.yagent-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.yagent-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* thin vertical connector between task steps */
+.yagent-step-line::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  bottom: -6px;
+  inset-inline-start: 11px;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    var(--y-border-strong),
+    var(--y-border) 70%,
+    transparent
+  );
+}
+
+.yagent-step-line:last-child::before {
+  display: none;
+}
+
+/* dotted canvas backdrop behind the preview workspace */
+.yagent-canvas-bg {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: 0 0;
+}
+
+/* subtle top fade for scrolled content */
+.yagent-fade-top {
+  mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yagent-root *,
+  .yagent-root *::before,
+  .yagent-root *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
