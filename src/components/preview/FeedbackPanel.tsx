@@ -186,9 +186,12 @@ function DraftCard({ annotation, selected }: { annotation: Annotation; selected:
           <textarea
             value={annotation.comment}
             onChange={(event) => actions.updateAnnotationComment(annotation.id, event.target.value)}
-            rows={2}
+            rows={3}
+            /* A freshly placed mark opens this surface with the caret ready. */
+            autoFocus={selected && annotation.comment.length === 0}
+            aria-label={`توضیح علامت ${annotation.index}`}
             placeholder="توضیح اصلاح را بنویس… مثلاً: ارتفاع این بخش کمتر شود."
-            className="w-full resize-none rounded-y-sm border border-y-line bg-y-bg/50 p-2 text-y-sm leading-7 text-y-ink outline-none placeholder:text-y-ink-dim focus:border-y-accent-border"
+            className="w-full resize-y break-words rounded-y-sm border border-y-line bg-y-bg/60 p-2.5 text-y-sm leading-7 text-y-ink outline-none placeholder:text-y-ink-dim hover:border-y-line-strong focus:border-y-accent-border [overflow-wrap:anywhere]"
           />
           <div className="mt-1.5 flex flex-wrap items-center gap-2 text-y-xs text-y-ink-dim">
             <span className="flex items-center gap-1">
@@ -198,7 +201,9 @@ function DraftCard({ annotation, selected }: { annotation: Annotation; selected:
             {annotation.elementId ? (
               <span className="yagent-ltr rounded-y-xs bg-y-surface px-1.5 py-0.5">{annotation.elementId}</span>
             ) : null}
-            {annotation.elementLabel ? <span className="truncate">{truncate(annotation.elementLabel, 34)}</span> : null}
+            {annotation.elementLabel ? (
+              <span className="min-w-0 max-w-[14rem] truncate">{truncate(annotation.elementLabel, 34)}</span>
+            ) : null}
           </div>
         </div>
 

@@ -67,6 +67,8 @@ export interface ConversationSnapshot {
   results: ActionResult[]
   /** Annotations referenced by the conversation's feedback messages. */
   annotations: Annotation[]
+  /** Revisions a restored result card can open in the preview workspace. */
+  revisions: PreviewRevision[]
 }
 
 export type ApprovalDecision = 'approve' | 'reject'

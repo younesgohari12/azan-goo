@@ -476,14 +476,54 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
         title: plan.result.title,
         status: 'success',
         message: plan.result.message,
-        link: plan.result.linkLabel && plan.kind !== 'page_feedback' ? '#' : undefined,
-        linkLabel: plan.result.linkLabel,
-        previewRevisionId: plan.kind === 'page_feedback' ? run.lastRevisionId : undefined,
+        /* Nothing external happened: the mock marks its results as demo and
+           offers the local preview instead of a fake site link. */
+        demo: true,
+        previewRevisionId: run.lastRevisionId,
         technical: plan.result.technical,
       })
     }
 
     touchConversation(conversationId)
+  }
+
+  /**
+   * A decision on a restored (seeded) approval is not attached to a running
+   * plan. The task and its step still have to leave the waiting state, otherwise
+   * the panel keeps saying "منتظر تأیید" and the composer keeps offering "توقف".
+   */
+  function settleLinkedTask(approval: Approval, decision: ApprovalDecision): void {
+    if (!approval.taskId) return
+    const task = tasks.get(approval.taskId)
+    if (!task) return
+    const conversationId = approval.conversationId
+
+    task.steps.forEach((step) => {
+      const isDecisionStep = step.id === approval.stepId
+      if (!isDecisionStep && step.status !== 'pending') return
+      step.status = decision === 'approve' ? 'done' : 'skipped'
+      step.endedAt = Date.now()
+      step.summary =
+        decision === 'approve'
+          ? isDecisionStep
+            ? 'تأیید شد و عملیات با موفقیت اجرا شد.'
+            : 'پس از تأیید تو اجرا شد.'
+          : 'به دلیل ردشدن تأیید اجرا نشد.'
+      if (decision === 'approve' && isDecisionStep) {
+        step.detail = {
+          ...step.detail,
+          receipt: [{ label: 'تصمیم', value: 'تأییدشده توسط کاربر' }, ...(step.detail?.receipt ?? [])],
+        }
+      }
+      updateStep(conversationId, task.id, step)
+    })
+
+    updateTask(conversationId, task.id, {
+      status: 'done',
+      endedAt: Date.now(),
+      activeStepId: undefined,
+      summary: decision === 'approve' ? 'کار تمام شد.' : 'کار بدون اجرای عملیات تمام شد.',
+    })
   }
 
   async function performStandaloneApproval(approval: Approval, decision: ApprovalDecision): Promise<void> {
@@ -492,6 +532,7 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
       approval.status = 'rejected'
       approval.resolvedAt = Date.now()
       emit({ type: 'approval:updated', conversationId, approvalId: approval.id, patch: { status: 'rejected', resolvedAt: approval.resolvedAt } })
+      settleLinkedTask(approval, 'reject')
       addAssistantMessage(conversationId, { text: `«${approval.title}» را لغو کردم؛ هیچ تغییری روی سایت اعمال نشد.` })
       touchConversation(conversationId)
       return
@@ -518,10 +559,16 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
       patch: { status: 'succeeded', resolvedAt: approval.resolvedAt, result: clone(approval.result) },
     })
 
+    settleLinkedTask(approval, 'approve')
+
     addResult(conversationId, {
       title: `${approval.title} انجام شد`,
       status: 'success',
-      message: approval.kind === 'delete_plugin' ? 'افزونه حذف شد و جدول‌های مربوط به آن پاک شدند.' : approval.result.message,
+      message:
+        approval.kind === 'delete_plugin'
+          ? 'افزونه حذف شد و جدول‌های مربوط به آن پاک شدند. (نمایشی — سایت واقعی تغییر نکرد)'
+          : `${approval.result.message} (نمایشی)`,
+      demo: true,
       technical: approval.result.technical,
     })
     touchConversation(conversationId)
@@ -600,6 +647,9 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
 
       const conversationMessages = own(messages).sort((a, b) => a.createdAt - b.createdAt)
       const referenced = new Set(conversationMessages.flatMap((message) => message.annotationIds ?? []))
+      /* The page's revisions travel with the snapshot so a restored result card
+         can open the preview it refers to. */
+      const page = conversations.get(conversationId)?.previewPageId
 
       return clone({
         messages: conversationMessages,
@@ -607,6 +657,7 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
         approvals: own(approvals),
         results: own(results),
         annotations: [...annotations.values()].filter((annotation) => referenced.has(annotation.id)),
+        revisions: page ? pageRevisions(page) : [],
       })
     },
 
@@ -680,27 +731,37 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
     },
 
     async stopTask(conversationId) {
+      let stoppedSomething = false
       const run = runs.get(conversationId)
-      if (!run) return
-      run.stopped = true
-      run.waiters.forEach((waiter) => waiter('stopped'))
-      run.waiters = []
+      if (run) {
+        stoppedSomething = true
+        run.stopped = true
+        run.waiters.forEach((waiter) => waiter('stopped'))
+        run.waiters = []
 
-      if (run.streamingMessageId) {
-        const message = messages.get(run.streamingMessageId)
-        if (message) {
-          message.status = 'stopped'
-          emit({
-            type: 'message:updated',
-            conversationId,
-            messageId: message.id,
-            patch: { status: 'stopped', text: message.text },
-          })
+        if (run.streamingMessageId) {
+          const message = messages.get(run.streamingMessageId)
+          if (message) {
+            message.status = 'stopped'
+            emit({
+              type: 'message:updated',
+              conversationId,
+              messageId: message.id,
+              patch: { status: 'stopped', text: message.text },
+            })
+          }
         }
+        runs.delete(conversationId)
       }
 
-      const task = tasks.get(run.taskId)
-      if (task) {
+      /* A restored conversation can be waiting for a decision without a live run
+         (the seeded demo threads): stopping it still has to end that task. */
+      const task = [...tasks.values()]
+        .filter((item) => item.conversationId === conversationId)
+        .sort((a, b) => a.startedAt - b.startedAt)
+        .at(-1)
+      if (task && (task.status === 'running' || task.status === 'queued' || task.status === 'waiting_approval')) {
+        stoppedSomething = true
         const active = task.steps.find((step) => step.status === 'active' || step.status === 'waiting_approval')
         if (active) {
           active.status = 'skipped'
@@ -708,6 +769,13 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
           active.endedAt = Date.now()
           updateStep(conversationId, task.id, active)
         }
+        task.steps
+          .filter((step) => step.status === 'pending')
+          .forEach((step) => {
+            step.status = 'skipped'
+            step.summary = 'به دلیل توقف کار اجرا نشد.'
+            updateStep(conversationId, task.id, step)
+          })
         updateTask(conversationId, task.id, {
           status: 'stopped',
           summary: 'کار متوقف شد.',
@@ -720,6 +788,7 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
         (approval) => approval.conversationId === conversationId && approval.status === 'pending',
       )
       if (pendingApproval) {
+        stoppedSomething = true
         pendingApproval.status = 'rejected'
         pendingApproval.resolvedAt = Date.now()
         emit({
@@ -730,7 +799,9 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
         })
       }
 
-      runs.delete(conversationId)
+      if (!stoppedSomething) return
+      addAssistantMessage(conversationId, { text: 'کار را متوقف کردم؛ هیچ تغییری روی سایت اعمال نشد.' })
+      touchConversation(conversationId)
     },
 
     async resolveApproval(approvalId: string, decision: ApprovalDecision) {
@@ -767,18 +838,22 @@ export function createMockAdapter(options: MockAdapterOptions = {}): YAgentAdapt
       emit({ type: 'preview:ready', conversationId, revision: clone(revision) })
 
       addResult(conversationId, {
-        title: `«${revision.pageTitle}» منتشر شد`,
+        title: `«${revision.pageTitle}» منتشر شد (نمایشی)`,
         status: 'success',
-        message: `نسخهٔ ${revision.revision} روی سایت منتشر شد و نسخهٔ قبلی در تاریخچه باقی ماند.`,
-        link: '#',
-        linkLabel: 'مشاهدهٔ صفحه در سایت',
+        message:
+          `در این نسخهٔ نمایشی، انتشار فقط روی همین پیش‌نمایش ثبت شد؛ چیزی روی سایت واقعی تغییر نکرد. ` +
+          `نسخهٔ ${revision.revision} در تاریخچه ماند.`,
+        demo: true,
+        previewRevisionId: revision.id,
         technical: [
           { label: 'نسخه', value: `v${revision.revision}` },
           { label: 'شناسهٔ انتشار', value: uid('pub') },
         ],
       })
       addAssistantMessage(conversationId, {
-        text: `نسخهٔ ${revision.revision} را منتشر کردم. اگر بعداً تغییری لازم شد، از تاریخچهٔ نسخه‌ها می‌توانی برگردانی.`,
+        text:
+          `نسخهٔ ${revision.revision} را به‌صورت آزمایشی منتشر کردم؛ چون این نسخه نمایشی است، هیچ درخواستی به سایت واقعی فرستاده نشد. ` +
+          `اگر بعداً تغییری لازم شد، از تاریخچهٔ نسخه‌ها می‌توانی برگردانی.`,
       })
       touchConversation(conversationId)
     },

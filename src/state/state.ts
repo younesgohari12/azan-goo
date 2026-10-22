@@ -21,6 +21,8 @@ export interface PreviewState {
   compareRevisionId?: string
   device: PreviewDevice
   width: number
+  /** Scale the device frame down to fit the workspace (default). */
+  fit: boolean
   annotate: boolean
   selectedAnnotationId?: string
   /** Bumped to force the iframe to reload the document. */
@@ -87,13 +89,14 @@ export function createInitialState(capabilities: AdapterCapabilities): YAgentSta
 
     searchQuery: '',
     sidebarCollapsed: false,
-    panelOpen: true,
+    panelOpen: false,
     panelTab: 'steps',
 
     preview: {
       open: false,
       device: 'desktop',
       width: DEFAULT_PREVIEW_WIDTH.desktop,
+      fit: true,
       annotate: false,
       nonce: 0,
       height: 0,

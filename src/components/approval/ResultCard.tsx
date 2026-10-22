@@ -1,6 +1,7 @@
 import { AlertTriangle, Check, ExternalLink, Eye } from 'lucide-react'
 import { useState } from 'react'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useYAgent } from '@/state/YAgentProvider'
@@ -10,7 +11,7 @@ import { useYAgent } from '@/state/YAgentProvider'
  * explanation, the related link and — collapsed — the technical receipt.
  */
 export function ResultCard({ resultId }: { resultId: string }) {
-  const { state, actions } = useYAgent()
+  const { state, actions, derived } = useYAgent()
   const [showTechnical, setShowTechnical] = useState(false)
   const result = state.results[resultId]
 
@@ -19,8 +20,13 @@ export function ResultCard({ resultId }: { resultId: string }) {
   const success = result.status === 'success'
   const previewRevisionId = result.previewRevisionId
   const previewPageId = previewRevisionId
-    ? state.revisions[previewRevisionId]?.pageId ?? state.preview.pageId
+    ? state.revisions[previewRevisionId]?.pageId ??
+      derived.activeConversation?.previewPageId ??
+      state.preview.pageId
     : undefined
+  /* A `#` link is not a destination: the demo never pretends the page is
+     reachable on a real site. */
+  const externalLink = result.link && result.link !== '#' ? result.link : undefined
 
   return (
     <div
@@ -39,8 +45,18 @@ export function ResultCard({ resultId }: { resultId: string }) {
           {success ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : <AlertTriangle className="h-3.5 w-3.5" />}
         </span>
         <div className="min-w-0 flex-1">
-          <p className={cn('text-y-base font-medium', success ? 'text-y-ink' : 'text-y-danger')}>{result.title}</p>
-          <p className="mt-1 text-y-sm leading-7 text-y-ink-muted">{result.message}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p
+              className={cn(
+                'min-w-0 break-words text-y-base font-medium',
+                success ? 'text-y-ink' : 'text-y-danger',
+              )}
+            >
+              {result.title}
+            </p>
+            {result.demo ? <Badge variant="plain">نمایشی</Badge> : null}
+          </div>
+          <p className="mt-1 break-words text-y-sm leading-7 text-y-ink-muted">{result.message}</p>
         </div>
       </div>
 
@@ -56,13 +72,19 @@ export function ResultCard({ resultId }: { resultId: string }) {
           </Button>
         ) : null}
 
-        {result.link ? (
+        {externalLink ? (
           <Button size="sm" variant="ghost" asChild>
-            <a href={result.link} target="_blank" rel="noreferrer">
+            <a href={externalLink} target="_blank" rel="noreferrer">
               <ExternalLink className="h-3.5 w-3.5" />
               {result.linkLabel ?? 'مشاهده در سایت'}
             </a>
           </Button>
+        ) : null}
+
+        {!externalLink && result.linkLabel ? (
+          <span className="text-y-xs text-y-ink-dim">
+            {result.linkLabel} — در نسخهٔ نمایشی، سایت واقعی در دسترس نیست.
+          </span>
         ) : null}
 
         {result.technical?.length ? (
@@ -77,11 +99,11 @@ export function ResultCard({ resultId }: { resultId: string }) {
       </div>
 
       {showTechnical && result.technical?.length ? (
-        <dl className="mt-2.5 animate-y-fade-in space-y-1 rounded-y-sm border border-y-line bg-y-bg/50 p-2.5 text-y-xs">
+        <dl className="mt-2.5 animate-y-fade-in space-y-1 overflow-x-auto rounded-y-sm border border-y-line bg-y-bg/50 p-2.5 text-y-xs">
           {result.technical.map((item) => (
             <div key={item.label} className="flex items-center justify-between gap-3">
-              <dt className="text-y-ink-dim">{item.label}</dt>
-              <dd className="yagent-ltr text-y-ink-muted">{item.value}</dd>
+              <dt className="shrink-0 text-y-ink-dim">{item.label}</dt>
+              <dd className="yagent-ltr min-w-0 break-all text-y-ink-muted">{item.value}</dd>
             </div>
           ))}
         </dl>

@@ -310,10 +310,12 @@ export function createSeed(): MockSeed {
     {
       id: 'res-landing-publish',
       conversationId: 'c-landing',
-      title: 'صفحهٔ فرود منتشر شد',
+      title: 'صفحهٔ فرود منتشر شد (نمایشی)',
       status: 'success',
-      message: 'صفحهٔ فرود استودیو آرا روی سایت منتشر شد و نسخهٔ قبلی در تاریخچه ماند.',
-      link: '#',
+      message:
+        'نسخهٔ اول صفحه در این نسخهٔ نمایشی ثبت شد؛ چیزی روی سایت واقعی منتشر نشد. پیش‌نمایش آن را می‌توانی باز کنی.',
+      demo: true,
+      previewRevisionId: 'rev-landing-1',
       technical: [
         { label: 'شناسهٔ انتشار', value: 'pub_8f31c2' },
         { label: 'زمان پاسخ سرور', value: '۰.۹ ثانیه' },
@@ -326,7 +328,8 @@ export function createSeed(): MockSeed {
       title: 'نسخهٔ ۲ آمادهٔ بازبینی است',
       status: 'success',
       message: 'تغییرهای خواسته‌شده اعمال شد و نسخهٔ تازه به عنوان پیش‌نویس ثبت شد.',
-      link: '#',
+      previewRevisionId: 'rev-landing-2',
+      demo: true,
       technical: [
         { label: 'نسخهٔ مبنا', value: 'v1' },
         { label: 'نسخهٔ جدید', value: 'v2' },
@@ -339,7 +342,7 @@ export function createSeed(): MockSeed {
       title: 'گزارش بررسی سرعت آماده شد',
       status: 'success',
       message: '۷ پیشنهاد اولویت‌دار برای رساندن امتیاز از ۵۴ به ۸۸ آماده است.',
-      link: '#',
+      demo: true,
       technical: [
         { label: 'ابزار', value: 'yagent-audit 0.9' },
         { label: 'زمان بررسی', value: '۵.۱ ثانیه' },

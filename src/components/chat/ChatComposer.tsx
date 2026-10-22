@@ -71,14 +71,14 @@ export function ChatComposer() {
             }}
             placeholder="از YAgent بخواه روی سایتت کاری انجام بده…"
             className={cn(
-              'block min-h-[54px] w-full resize-none bg-transparent px-4 pb-1 pt-3.5 text-y-md leading-8 text-y-ink',
-              'outline-none placeholder:text-y-ink-dim/90',
+              'block min-h-[56px] w-full resize-none bg-transparent px-4 pb-1 pt-3.5 text-y-md leading-8 text-y-ink',
+              'break-words outline-none placeholder:text-y-ink-dim [overflow-wrap:anywhere]',
             )}
           />
 
           <div className="flex items-center gap-1 px-2 pb-2 pt-0.5">
             <Tooltip label="افزودن فایل">
-              <IconButton label="افزودن فایل" size="md" onClick={() => fileInputRef.current?.click()}>
+              <IconButton label="افزودن فایل" size="lg" onClick={() => fileInputRef.current?.click()}>
                 <Plus className="h-4 w-4" />
               </IconButton>
             </Tooltip>
@@ -89,7 +89,7 @@ export function ChatComposer() {
 
             <Tooltip label={voiceLabel}>
               <span className="inline-flex">
-                <IconButton label="ورودی صوتی" size="md" disabled={!state.capabilities.voiceInput}>
+                <IconButton label="ورودی صوتی" size="lg" disabled={!state.capabilities.voiceInput}>
                   <Mic className="h-4 w-4" />
                 </IconButton>
               </span>
@@ -99,7 +99,8 @@ export function ChatComposer() {
               <Button
                 variant="secondary"
                 shape="pill"
-                className="h-9 gap-2 border-y-line-strong px-3.5"
+                aria-label="توقف کار"
+                className="h-11 gap-2 border-y-line-strong px-4"
                 onClick={() => void actions.stop()}
               >
                 <Square className="h-3 w-3 fill-current" />
@@ -111,7 +112,7 @@ export function ChatComposer() {
                 shape="pill"
                 size="icon"
                 aria-label="ارسال پیام"
-                className={cn('h-9 w-9', !derived.canSend && 'border border-y-line text-y-ink-dim')}
+                className={cn('h-11 w-11', !derived.canSend && 'border border-y-line text-y-ink-dim')}
                 disabled={!derived.canSend}
                 onClick={() => void submit()}
               >
@@ -121,7 +122,7 @@ export function ChatComposer() {
           </div>
         </div>
 
-        <p className="mt-2 text-center text-y-xs leading-6 text-y-ink-dim/80">
+        <p className="mt-2 text-center text-y-xs leading-6 text-y-ink-dim">
           نسخهٔ نمایشی با دادهٔ نمونه — YAgent پیش از هر تغییر روی سایت، تأیید تو را می‌گیرد.
         </p>
       </div>

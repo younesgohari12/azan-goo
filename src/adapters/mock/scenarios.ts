@@ -42,7 +42,7 @@ export interface ScenarioPlan {
   steps: StepPlan[]
   pageId?: string
   pageTitle?: string
-  result?: { title: string; message: string; linkLabel?: string; technical?: Array<{ label: string; value: string }> }
+  result?: { title: string; message: string; technical?: Array<{ label: string; value: string }> }
   failure?: { title: string; message: string; technical?: Array<{ label: string; value: string }> }
 }
 
@@ -314,7 +314,6 @@ export function scenarioFor(text: string, context: ScenarioContext = {}): Scenar
       result: {
         title: 'افزونه نصب و فعال شد',
         message: 'کد کوتاه `[yagent_booking]` را در هر برگه‌ای که می‌خواهی قرار بده.',
-        linkLabel: 'مشاهدهٔ برگهٔ رزرو نوبت',
         technical: [
           { label: 'افزونه', value: 'yagent-booking 1.0.0' },
           { label: 'شناسهٔ نصب', value: 'plg_c41a' },
@@ -333,7 +332,6 @@ export function scenarioFor(text: string, context: ScenarioContext = {}): Scenar
       result: {
         title: 'گزارش بررسی سرعت آماده شد',
         message: '۷ پیشنهاد اولویت‌دار برای رساندن امتیاز از ۵۴ به ۸۸ ثبت شد.',
-        linkLabel: 'مشاهدهٔ گزارش',
         technical: [
           { label: 'ابزار', value: 'yagent-audit 0.9' },
           { label: 'مدت بررسی', value: '۵.۱ ثانیه' },
@@ -354,7 +352,6 @@ export function scenarioFor(text: string, context: ScenarioContext = {}): Scenar
       result: {
         title: 'صفحه منتشر شد',
         message: `«${pageTitle}» روی سایت منتشر شد و نسخهٔ قبلی در تاریخچه باقی ماند.`,
-        linkLabel: 'مشاهدهٔ صفحه در سایت',
         technical: [
           { label: 'شناسهٔ انتشار', value: 'pub_8f31c2' },
           { label: 'زمان پاسخ', value: '۰.۹ ثانیه' },
@@ -388,7 +385,6 @@ export function feedbackPlan(pageId: string, pageTitle: string): ScenarioPlan {
     result: {
       title: 'نسخهٔ جدید آماده شد',
       message: 'نسخهٔ تازه ساخته شد؛ می‌توانی آن را با نسخهٔ قبلی مقایسه کنی یا منتشرش کنی.',
-      linkLabel: 'بازکردن پیش‌نمایش',
       technical: [{ label: 'نسخهٔ مبنا', value: 'نسخهٔ قبلی همین صفحه' }],
     },
   }

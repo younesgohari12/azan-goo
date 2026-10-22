@@ -63,13 +63,15 @@ export default {
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', 'monospace'],
       },
       fontSize: {
-        'y-xs': ['11.5px', { lineHeight: '1.6' }],
-        'y-sm': ['12.5px', { lineHeight: '1.7' }],
-        'y-base': ['13.5px', { lineHeight: '1.8' }],
-        'y-md': ['14.5px', { lineHeight: '1.85' }],
-        'y-lg': ['16px', { lineHeight: '1.8' }],
-        'y-xl': ['20px', { lineHeight: '1.6' }],
-        'y-2xl': ['26px', { lineHeight: '1.45' }],
+        /* Chat body copy sits at 15px (y-base) and the composer at 16px (y-md):
+           the reading size a long Persian conversation needs. */
+        'y-xs': ['12px', { lineHeight: '1.65' }],
+        'y-sm': ['13px', { lineHeight: '1.75' }],
+        'y-base': ['15px', { lineHeight: '1.85' }],
+        'y-md': ['16px', { lineHeight: '1.85' }],
+        'y-lg': ['18px', { lineHeight: '1.75' }],
+        'y-xl': ['22px', { lineHeight: '1.6' }],
+        'y-2xl': ['28px', { lineHeight: '1.45' }],
       },
       borderRadius: {
         'y-xs': 'var(--y-radius-xs)',

@@ -24,6 +24,7 @@ export type YAgentAction =
       approvals: Approval[]
       results: ActionResult[]
       annotations: Annotation[]
+      revisions: PreviewRevision[]
     }
   | { type: 'conversation:select'; conversationId: string }
   | { type: 'search:set'; query: string }
@@ -35,6 +36,7 @@ export type YAgentAction =
   | { type: 'preview:loaded'; revisions: PreviewRevision[]; annotations: Annotation[] }
   | { type: 'preview:device'; device: PreviewDevice }
   | { type: 'preview:width'; width: number }
+  | { type: 'preview:fit'; fit: boolean }
   | { type: 'preview:annotate'; enabled: boolean }
   | { type: 'preview:revision'; revisionId: string }
   | { type: 'preview:compare'; revisionId?: string }
@@ -220,8 +222,8 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
     case 'conversations:sync':
       return { ...state, conversations: action.conversations }
 
-    case 'conversation:loaded':
-      return {
+    case 'conversation:loaded': {
+      let next: YAgentState = {
         ...state,
         messagesByConversation: { ...state.messagesByConversation, [action.conversationId]: action.messages },
         tasks: mergeMissing(state.tasks, action.tasks),
@@ -229,9 +231,34 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
         results: mergeMissing(state.results, action.results),
         annotations: mergeMissing(state.annotations, action.annotations),
       }
+      // Restored result cards can only offer "مشاهدهٔ پیش‌نمایش" when the
+      // revisions they reference come with the snapshot.
+      action.revisions.forEach((revision) => {
+        if (!next.revisions[revision.id]) next = mergeRevision(next, revision)
+      })
+      return next
+    }
 
     case 'conversation:select':
-      return { ...state, activeConversationId: action.conversationId }
+      /* The preview and the notes written on it belong to the conversation that
+         opened it: switching conversations drops that binding instead of
+         carrying the previous page's annotations into the new thread. */
+      return {
+        ...state,
+        activeConversationId: action.conversationId,
+        panelTab: 'steps',
+        preview: {
+          ...state.preview,
+          open: false,
+          pageId: undefined,
+          revisionId: undefined,
+          compareRevisionId: undefined,
+          selectedAnnotationId: undefined,
+          annotate: false,
+          height: 0,
+          nonce: state.preview.nonce + 1,
+        },
+      }
 
     case 'search:set':
       return { ...state, searchQuery: action.query }
@@ -249,21 +276,38 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
     case 'model:select':
       return { ...state, selectedModelId: action.modelId }
 
-    case 'preview:open':
+    case 'preview:open': {
+      const samePage = state.preview.pageId === action.pageId
       return {
         ...state,
         preview: {
           ...state.preview,
           open: true,
           pageId: action.pageId,
-          revisionId: action.revisionId ?? state.preview.revisionId,
+          revisionId: action.revisionId ?? (samePage ? state.preview.revisionId : undefined),
+          /* Comparison and selection are properties of one page's revisions. */
+          compareRevisionId: samePage ? state.preview.compareRevisionId : undefined,
+          selectedAnnotationId: samePage ? state.preview.selectedAnnotationId : undefined,
           nonce: state.preview.nonce + 1,
           height: 0,
         },
       }
+    }
 
     case 'preview:close':
-      return { ...state, preview: { ...state.preview, open: false, annotate: false, selectedAnnotationId: undefined } }
+      return {
+        ...state,
+        preview: {
+          ...state.preview,
+          open: false,
+          annotate: false,
+          selectedAnnotationId: undefined,
+          pageId: undefined,
+          revisionId: undefined,
+          compareRevisionId: undefined,
+          height: 0,
+        },
+      }
 
     case 'preview:loaded': {
       let next = state
@@ -297,6 +341,9 @@ export function reducer(state: YAgentState, action: YAgentAction): YAgentState {
 
     case 'preview:width':
       return { ...state, preview: { ...state.preview, width: Math.max(320, Math.min(1920, action.width)) } }
+
+    case 'preview:fit':
+      return { ...state, preview: { ...state.preview, fit: action.fit } }
 
     case 'preview:annotate':
       return {

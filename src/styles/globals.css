@@ -29,10 +29,10 @@
   --y-line-alpha: 0.06;
   --y-line-strong-alpha: 0.11;
 
-  /* type */
+  /* type — every ink stays at ≥4.5:1 against the surfaces it is used on */
   --y-ink-rgb: 236 236 240;
-  --y-ink-muted-rgb: 160 160 171;
-  --y-ink-dim-rgb: 113 113 124;
+  --y-ink-muted-rgb: 168 168 180;
+  --y-ink-dim-rgb: 140 140 152;
 
   /* accents */
   --y-accent-rgb: 139 124 246;
@@ -78,8 +78,8 @@
    so the same defaults and tokens apply inside a dropdown, tooltip or dialog. */
 :where(.yagent-root) {
   font-family: 'Vazirmatn Variable', Vazirmatn, 'Segoe UI', Tahoma, system-ui, -apple-system, sans-serif;
-  font-size: 13.5px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.85;
   color: rgb(var(--y-ink-rgb));
   background-color: rgb(var(--y-bg-rgb));
   -webkit-font-smoothing: antialiased;

@@ -261,8 +261,14 @@ function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
           استفادهٔ این ماه: {fa(38)}٪
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem icon={<Settings className="h-3.5 w-3.5" />}>تنظیمات YAgent</DropdownMenuItem>
-        <DropdownMenuItem icon={<PanelRightOpen className="h-3.5 w-3.5" />}>پیشخوان وردپرس</DropdownMenuItem>
+        {/* No handler behind them: they are labelled as demo instead of looking
+            like live navigation. */}
+        <DropdownMenuItem icon={<Settings className="h-3.5 w-3.5" />} disabled>
+          تنظیمات YAgent — نمایشی
+        </DropdownMenuItem>
+        <DropdownMenuItem icon={<PanelRightOpen className="h-3.5 w-3.5" />} disabled>
+          پیشخوان وردپرس — نمایشی
+        </DropdownMenuItem>
         {import.meta.env.DEV ? (
           <>
             <DropdownMenuSeparator />
@@ -277,8 +283,8 @@ function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
           </>
         ) : null}
         <DropdownMenuSeparator />
-        <DropdownMenuItem danger icon={<LogOut className="h-3.5 w-3.5" />}>
-          خروج از حساب
+        <DropdownMenuItem danger icon={<LogOut className="h-3.5 w-3.5" />} disabled>
+          خروج از حساب — نمایشی
         </DropdownMenuItem>
         <div className="px-2.5 pb-1 pt-2">
           <Badge variant="plain">نسخهٔ نمایشی — بدون بک‌اند</Badge>

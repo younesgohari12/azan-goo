@@ -176,6 +176,8 @@ export interface ActionResult {
   linkLabel?: string
   /** When set, the card offers "مشاهدهٔ پیش‌نمایش" and opens the workspace. */
   previewRevisionId?: string
+  /** The result only simulates an external effect (the mock adapter sets this). */
+  demo?: boolean
   technical?: Array<{ label: string; value: string }>
   createdAt: Timestamp
 }

@@ -20,12 +20,14 @@ const buttonVariants = cva(
         link: 'text-y-accent hover:text-y-accent-hover underline-offset-4 hover:underline px-0',
       },
       size: {
-        sm: 'h-8 px-3 text-y-sm',
-        md: 'h-9 px-3.5 text-y-base',
+        /* ~36–44px: comfortable pointer and touch targets for the important
+           controls (approve/reject, publish, send). */
+        sm: 'h-9 px-3 text-y-sm',
+        md: 'h-10 px-4 text-y-base',
         lg: 'h-11 px-5 text-y-md',
-        icon: 'h-8 w-8',
-        'icon-sm': 'h-7 w-7',
-        'icon-lg': 'h-10 w-10',
+        icon: 'h-9 w-9',
+        'icon-sm': 'h-8 w-8',
+        'icon-lg': 'h-11 w-11',
       },
       shape: {
         default: '',
@@ -59,8 +61,8 @@ export interface IconButtonProps extends Omit<ButtonProps, 'size' | 'shape'> {
 const iconSizes: Record<NonNullable<IconButtonProps['size']>, string> = {
   xs: 'h-7 w-7',
   sm: 'h-8 w-8',
-  md: 'h-9 w-9',
-  lg: 'h-10 w-10',
+  md: 'h-10 w-10',
+  lg: 'h-11 w-11',
 }
 
 /** Square, quiet icon control used across the toolbar, sidebar and composer. */

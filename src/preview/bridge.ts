@@ -11,7 +11,7 @@
  * Injected runtime responsibilities (inside the iframe):
  * - report readiness, page title, `data-yagent-id` list and document height
  * - draw pins / regions for the annotations the shell sends
- * - in annotate mode, capture click (pin) and drag (region) gestures
+ * - in annotate mode, capture tap (pin) and drag (region) gestures
  */
 
 export const HOST_SOURCE = 'yagent-host'
@@ -71,6 +71,11 @@ export function isPreviewMessage(value: unknown): value is PreviewMessage {
  * The runtime injected into the preview document. Kept as a plain ES5 string on
  * purpose: it must run inside the sandboxed page without any module loader, and
  * without being bundled with the shell's code.
+ *
+ * Gestures use Pointer Events, so one code path serves mouse, pen and touch.
+ * Normal page scrolling is untouched: the only rule that affects it
+ * (`touch-action: none`) is applied by the shell's annotate toggle and removed
+ * again when annotation mode ends.
  */
 export const PREVIEW_BRIDGE_SCRIPT = `(function () {
   'use strict';
@@ -115,7 +120,10 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
       '.yagent-an--stale{opacity:.72;border-style:dashed}',
       '#yagent-draw{position:absolute;border:1.5px dashed #8b7cf6;background:rgba(139,124,246,.12);',
       'border-radius:8px;pointer-events:none}',
-      'body.yagent-annotating,body.yagent-annotating *{cursor:crosshair !important}'
+      'body.yagent-annotating,body.yagent-annotating *{cursor:crosshair !important}',
+      /* Only while annotating: a drag must draw instead of scrolling the page.
+         Browsing keeps the page's own touch behaviour. */
+      'body.yagent-annotating{touch-action:none;-webkit-user-select:none;user-select:none}'
     ].join('');
     (document.head || document.documentElement).appendChild(style);
     stylesInjected = true;
@@ -200,17 +208,35 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
     };
   }
 
-  function onMouseDown(event) {
-    if (state.mode !== 'annotate' || event.button !== 0) return;
+  function insideLayer(target) {
+    return !!(target && target.closest && target.closest('#yagent-layer'));
+  }
+
+  function onPointerDown(event) {
+    if (state.mode !== 'annotate') return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    /* An existing mark selects itself (its own click handler) — never a new one. */
+    if (insideLayer(event.target)) return;
     event.preventDefault();
     event.stopPropagation();
     layout();
     var point = normalize(event.clientX, event.clientY);
-    drag = { startX: event.clientX, startY: event.clientY, start: point, node: null, info: elementInfo(event.clientX, event.clientY) };
+    drag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      start: point,
+      node: null,
+      info: elementInfo(event.clientX, event.clientY)
+    };
+    if (event.pointerId !== undefined && document.body && document.body.setPointerCapture) {
+      try { document.body.setPointerCapture(event.pointerId); } catch (error) { /* not capturable */ }
+    }
   }
 
-  function onMouseMove(event) {
+  function onPointerMove(event) {
     if (!drag || state.mode !== 'annotate') return;
+    if (drag.pointerId !== undefined && event.pointerId !== drag.pointerId) return;
     var dx = Math.abs(event.clientX - drag.startX);
     var dy = Math.abs(event.clientY - drag.startY);
     if (!drag.node && dx + dy > 6) {
@@ -219,19 +245,19 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
       ensureLayer().appendChild(drag.node);
     }
     if (!drag.node) return;
+    event.preventDefault();
     drag.node.style.left = (Math.min(drag.startX, event.clientX) + window.scrollX - origin.x) + 'px';
     drag.node.style.top = (Math.min(drag.startY, event.clientY) + window.scrollY - origin.y) + 'px';
     drag.node.style.width = dx + 'px';
     drag.node.style.height = dy + 'px';
   }
 
-  function onMouseUp(event) {
+  function finishDrag(event) {
     if (!drag || state.mode !== 'annotate') return;
-    event.preventDefault();
-    event.stopPropagation();
     var ended = drag;
     drag = null;
     if (ended.node && ended.node.parentNode) ended.node.parentNode.removeChild(ended.node);
+    if (!event) return;
     var end = normalize(event.clientX, event.clientY);
     var width = Math.abs(end.x - ended.start.x);
     var height = Math.abs(end.y - ended.start.y);
@@ -257,8 +283,24 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
     }
   }
 
+  function onPointerUp(event) {
+    if (!drag) return;
+    if (drag.pointerId !== undefined && event.pointerId !== drag.pointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    finishDrag(event);
+  }
+
+  function onPointerCancel() {
+    if (!drag) return;
+    var ended = drag;
+    drag = null;
+    if (ended.node && ended.node.parentNode) ended.node.parentNode.removeChild(ended.node);
+  }
+
   function onClickCapture(event) {
     if (state.mode !== 'annotate') return;
+    if (insideLayer(event.target)) return;
     event.preventDefault();
     event.stopPropagation();
   }
@@ -273,6 +315,10 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
   function setMode(mode) {
     state.mode = mode === 'annotate' ? 'annotate' : 'browse';
     if (document.body) document.body.classList[state.mode === 'annotate' ? 'add' : 'remove']('yagent-annotating');
+    if (state.mode !== 'annotate' && drag) {
+      if (drag.node && drag.node.parentNode) drag.node.parentNode.removeChild(drag.node);
+      drag = null;
+    }
   }
 
   function syncAnnotations(annotations) {
@@ -325,9 +371,10 @@ export const PREVIEW_BRIDGE_SCRIPT = `(function () {
     else if (data.type === 'select') selectAnnotation(data.annotationId);
   });
 
-  document.addEventListener('mousedown', onMouseDown, true);
-  document.addEventListener('mousemove', onMouseMove, true);
-  document.addEventListener('mouseup', onMouseUp, true);
+  document.addEventListener('pointerdown', onPointerDown, true);
+  document.addEventListener('pointermove', onPointerMove, true);
+  document.addEventListener('pointerup', onPointerUp, true);
+  document.addEventListener('pointercancel', onPointerCancel, true);
   document.addEventListener('click', onClickCapture, true);
   document.addEventListener('keydown', onKeyDown, true);
   window.addEventListener('resize', reportSize);

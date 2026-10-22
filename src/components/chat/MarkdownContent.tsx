@@ -17,14 +17,24 @@ function extractText(node: unknown): string {
 }
 
 const components: Components = {
-  p: ({ children }) => <p className="my-2.5 text-y-base leading-8 text-y-ink/95">{children}</p>,
-  h1: ({ children }) => <h1 className="mb-2 mt-5 text-y-xl font-semibold text-y-ink">{children}</h1>,
-  h2: ({ children }) => <h2 className="mb-2 mt-5 text-y-lg font-semibold text-y-ink">{children}</h2>,
-  h3: ({ children }) => <h3 className="mb-1.5 mt-4 text-y-md font-semibold text-y-ink">{children}</h3>,
+  p: ({ children }) => (
+    <p className="my-2.5 break-words text-y-base leading-8 text-y-ink/95 [overflow-wrap:anywhere]">
+      {children}
+    </p>
+  ),
+  h1: ({ children }) => (
+    <h1 className="mb-2 mt-5 break-words text-y-xl font-semibold text-y-ink [overflow-wrap:anywhere]">{children}</h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="mb-2 mt-5 break-words text-y-lg font-semibold text-y-ink [overflow-wrap:anywhere]">{children}</h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="mb-1.5 mt-4 break-words text-y-md font-semibold text-y-ink [overflow-wrap:anywhere]">{children}</h3>
+  ),
   h4: ({ children }) => <h4 className="mb-1.5 mt-3 text-y-base font-semibold text-y-ink">{children}</h4>,
   ul: ({ children }) => <ul className="my-2.5 list-disc space-y-1.5 ps-5 text-y-base leading-8">{children}</ul>,
   ol: ({ children }) => <ol className="my-2.5 list-decimal space-y-1.5 ps-5 text-y-base leading-8">{children}</ol>,
-  li: ({ children }) => <li className="marker:text-y-ink-dim">{children}</li>,
+  li: ({ children }) => <li className="break-words marker:text-y-ink-dim [overflow-wrap:anywhere]">{children}</li>,
   strong: ({ children }) => <strong className="font-semibold text-y-ink">{children}</strong>,
   em: ({ children }) => <em className="italic text-y-ink/90">{children}</em>,
   a: ({ children, href }) => (
@@ -38,13 +48,13 @@ const components: Components = {
     </a>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="my-3 border-s-2 border-y-accent-border ps-3 text-y-base text-y-ink-muted">
+    <blockquote className="my-3 break-words border-s-2 border-y-accent-border ps-3 text-y-base leading-8 text-y-ink-muted [overflow-wrap:anywhere]">
       {children}
     </blockquote>
   ),
   hr: () => <hr className="my-4 border-t border-y-line" />,
   code: ({ children }) => (
-    <code className="yagent-ltr inline-block rounded-y-xs bg-y-surface px-1.5 py-0.5 align-middle font-mono text-[12.5px] text-y-ink">
+    <code className="yagent-ltr inline rounded-y-xs bg-y-surface px-1.5 py-0.5 align-middle font-mono text-[13px] text-y-ink [overflow-wrap:anywhere]">
       {children}
     </code>
   ),

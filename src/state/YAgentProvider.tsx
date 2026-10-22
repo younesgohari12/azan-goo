@@ -55,6 +55,7 @@ export interface YAgentActions {
   closePreview: () => void
   setDevice: (device: PreviewDevice) => void
   setPreviewWidth: (width: number) => void
+  setFit: (fit: boolean) => void
   setAnnotate: (enabled: boolean) => void
   selectRevision: (revisionId: string) => void
   setCompareRevision: (revisionId?: string) => void
@@ -268,6 +269,9 @@ export function YAgentProvider({
       setPreviewWidth(width) {
         dispatch({ type: 'preview:width', width })
       },
+      setFit(fit) {
+        dispatch({ type: 'preview:fit', fit })
+      },
       setAnnotate(enabled) {
         dispatch({ type: 'preview:annotate', enabled })
         if (enabled) dispatch({ type: 'panel:set', open: true, tab: 'feedback' })
@@ -310,6 +314,9 @@ export function YAgentProvider({
         }
         dispatch({ type: 'annotation:add', annotation })
         dispatch({ type: 'preview:selectAnnotation', annotationId: annotation.id })
+        /* The note is written right after the mark is placed: make sure the
+           feedback surface is reachable (it is a drawer below 1280px). */
+        if (!stateRef.current.panelOpen) dispatch({ type: 'panel:set', open: true, tab: 'feedback' })
       },
       updateAnnotationComment(annotationId, comment) {
         dispatch({ type: 'annotation:comment', annotationId, comment })
