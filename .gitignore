@@ -1,0 +1,4 @@
+node_modules/
+
+# Generated sandbox download package (rebuild with the git archive command in AGENTS.md).
+.base44/download/

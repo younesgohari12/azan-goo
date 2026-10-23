@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <title>YAgent — نمایش مستقل</title>
+    <link rel="stylesheet" href="/assets/workspace/css/fonts.css">
+    <link rel="stylesheet" href="/assets/workspace/css/app.css">
+    <link rel="stylesheet" href="/assets/workspace/css/workspace.css">
+    <script>
+        // Sandbox-only host page. `demo: true` makes adapters/index.js pick the
+        // in-memory mock adapter, so the workspace runs with no WordPress, no
+        // network and no model credentials. The plugin view (views/workspace.php)
+        // never sets `demo`, so production always talks to the REST API.
+        window.YAgentUI = {
+            demo: true,
+            rest: '',
+            nonce: '',
+            userId: 0,
+            userName: 'مدیر سایت',
+            siteName: 'نمایش YAgent',
+            settingsUrl: '#',
+            dashboardUrl: '#',
+            version: '0.7.0-beta.1'
+        };
+    </script>
+</head>
+<body>
+    <div id="root"><p class="startup" role="status">در حال آماده‌سازی YAgent…</p></div>
+    <noscript>برای استفاده از دستیار، جاوااسکریپت مرورگر را فعال کنید.</noscript>
+    <script type="module" src="/assets/workspace/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# Base44 sandbox environment for this repository.
+#
+# The plugin itself runs inside WordPress, which this sandbox does not host.
+# What runs here is the front-end workspace app served as a standalone demo
+# (`.base44/dev/index.html` boots it with `demo: true` -> in-memory mock
+# adapter), plus the packaged source download. nginx reads everything from the
+# bind-mounted checkout, so edits never require a rebuild.
+services:
+  web:
+    image: nginx:alpine
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app:ro
+      - ./.base44/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    environment:
+      - BASE44_PREVIEW_MODE
+    labels:
+      base44.project: "YAgent workspace (standalone demo)"
+      base44.kind: "web"
+      base44.port: "3000"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          wget -q -O /dev/null http://127.0.0.1:3000/ &&
+          wget -q -O /dev/null http://127.0.0.1:3000/assets/workspace/js/app.js ||
+          (echo "demo page or workspace bundle unreachable"; exit 1)
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
