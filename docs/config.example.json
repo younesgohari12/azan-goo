@@ -1,0 +1,20 @@
+{
+  "read_only": true,
+  "auto_install_plugins": false,
+  "models": {
+    "normal": {
+      "provider": "avalai",
+      "model": "YOUR-EXACT-MODEL-ID",
+      "input_price": null,
+      "output_price": null,
+      "supports_tools": false,
+      "thinking_kind": "none",
+      "thinking_levels": {}
+    }
+  },
+  "routing": {"enabled": false, "economic": "normal", "balanced": "normal", "powerful": null, "allow_powerful": false, "long_prompt_chars": 4000},
+  "budgets": {"daily_usd": null, "monthly_usd": null, "task_usd": null, "daily_requests": 50, "monthly_requests": 1000, "task_requests": 12},
+  "retry": {"enabled": false, "max_retries": 2, "base_delay_seconds": 1, "max_delay_seconds": 60},
+  "memory": {"context_tokens": 16000, "max_output_tokens": 2048, "recent_turns": 6, "summary_max_tokens": 512, "summarize": true},
+  "task_limits": {"max_model_calls": 12, "max_tool_calls": 24, "max_seconds": 300}
+}

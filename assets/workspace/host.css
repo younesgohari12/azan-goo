@@ -1,0 +1,6 @@
+body.toplevel_page_yagent-ai #wpcontent{padding:0}
+body.toplevel_page_yagent-ai #wpbody-content{padding-bottom:0}
+body.toplevel_page_yagent-ai #wpfooter{display:none}
+#yagent-workspace-host{width:100%;height:calc(100vh - 32px);height:calc(100dvh - 32px);background:#141416}
+#yagent-workspace-frame{display:block;width:100%;height:100%;border:0;color-scheme:dark}
+@media(max-width:782px){#yagent-workspace-host{height:calc(100vh - 46px);height:calc(100dvh - 46px)}}

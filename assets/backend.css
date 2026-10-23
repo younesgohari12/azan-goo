@@ -1,0 +1,8 @@
+#yv2-app { max-width: 1100px; overflow-wrap: anywhere; }
+#yv2-app pre { white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; max-height: 34rem; }
+#yv2-app textarea { box-sizing: border-box; max-width: 100%; }
+#yv2-app input, #yv2-app select { box-sizing: border-box; max-width: 100%; margin-inline: 0; }
+#yv2-app details { margin: 1em 0; }
+#yv2-app #yv2-errors, #yv2-app #yv2-task-error { color: #b32d2e; white-space: pre-wrap; overflow-wrap: anywhere; }
+#yv2-app button, #yv2-app select, #yv2-app input { margin-block: 3px; }
+#yv2-app [data-yv2-record] { margin: 1em 0; padding-block: .5em; border-block-end: 1px solid #c3c4c7; }
