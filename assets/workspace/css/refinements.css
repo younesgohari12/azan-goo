@@ -1,0 +1,271 @@
+/*
+ * Hand-written surface styles for the YAgent workspace.
+ *
+ * `app.css` ships the generated utility bundle and the design tokens; this file
+ * carries the parts that utilities cannot express — the toolbar, the chat
+ * rhythm and the "working" loader. Loaded after app.css, so it wins ties.
+ *
+ * Everything here reads the shared `--y-*` tokens and is scoped to the
+ * `.workspace-*` / `.yagent-*` hooks used by the components.
+ */
+
+/* ---- 1) Toolbar: one calm strip — brand, status chip, controls, actions ---- */
+
+.workspace-bar {
+  gap: 10px;
+  min-height: 58px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgb(var(--y-line-rgb) / var(--y-line-alpha));
+  background: linear-gradient(180deg, rgb(var(--y-bg-elevated-rgb) / 1), rgb(var(--y-sidebar-rgb) / 1));
+}
+.workspace-brand { font-size: 14px; }
+
+.workspace-connection {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding-inline: 10px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--y-line-rgb) / var(--y-line-strong-alpha));
+  background: rgb(var(--y-surface-soft-rgb) / 0.65);
+  color: rgb(var(--y-ink-muted-rgb));
+  font-size: 11px;
+}
+.workspace-connection:before { margin-inline-end: 6px; }
+.workspace-connection[data-state="ready"]:before { background: rgb(var(--y-success-rgb)); }
+
+/* Select + switch share one bordered group so they read as a single control. */
+.workspace-controls,
+.workspace-actions {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding: 3px;
+  border-radius: 11px;
+  border: 1px solid rgb(var(--y-line-rgb) / var(--y-line-strong-alpha));
+  background: rgb(var(--y-surface-soft-rgb) / 0.7);
+}
+.workspace-actions { gap: 2px; }
+
+.workspace-field,
+.workspace-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding-inline: 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: rgb(var(--y-ink-muted-rgb));
+  white-space: nowrap;
+  transition: background-color var(--y-dur-fast) var(--y-ease);
+}
+.workspace-field:hover,
+.workspace-switch:hover { background: rgb(var(--y-surface-hover-rgb) / 0.5); }
+.workspace-field + .workspace-field { border-inline-start: 1px solid rgb(var(--y-line-rgb) / var(--y-line-alpha)); }
+.workspace-field-label { font-size: 11px; color: rgb(var(--y-ink-dim-rgb)); }
+
+.workspace-select { position: relative; display: inline-flex; align-items: center; }
+.workspace-bar select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 22px;
+  padding: 0;
+  padding-inline-end: 18px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--y-ink-rgb));
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+}
+.workspace-bar select:disabled { opacity: 0.55; cursor: wait; }
+.workspace-bar select:focus-visible { outline: 2px solid rgb(var(--y-accent-rgb)); outline-offset: 2px; border-radius: 6px; }
+.workspace-select-caret {
+  position: absolute;
+  inset-inline-end: 0;
+  width: 14px;
+  height: 14px;
+  color: rgb(var(--y-ink-dim-rgb));
+  pointer-events: none;
+}
+
+/* A native checkbox, dressed as a switch: same semantics, calmer look. */
+.workspace-switch { cursor: pointer; }
+.workspace-switch:has(input:disabled) { opacity: 0.6; cursor: wait; }
+.workspace-switch input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; }
+.workspace-switch-track {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--y-line-rgb) / var(--y-line-strong-alpha));
+  background: rgb(var(--y-surface-hover-rgb));
+  transition: background-color var(--y-dur) var(--y-ease), border-color var(--y-dur) var(--y-ease);
+}
+.workspace-switch-thumb {
+  position: absolute;
+  top: 2px;
+  inset-inline-start: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgb(var(--y-ink-dim-rgb));
+  transition: inset-inline-start var(--y-dur) var(--y-ease), background-color var(--y-dur) var(--y-ease);
+}
+.workspace-switch input:checked + .workspace-switch-track {
+  border-color: rgb(var(--y-accent-rgb) / var(--y-accent-border-alpha));
+  background: rgb(var(--y-accent-rgb) / 0.28);
+}
+.workspace-switch input:checked + .workspace-switch-track .workspace-switch-thumb {
+  inset-inline-start: 18px;
+  background: rgb(var(--y-accent-rgb));
+}
+.workspace-switch input:focus-visible + .workspace-switch-track { outline: 2px solid rgb(var(--y-accent-rgb)); outline-offset: 2px; }
+
+.workspace-actions button,
+.workspace-actions > a { min-width: 28px; min-height: 28px; border: 0; border-radius: 8px; background: transparent; color: rgb(var(--y-ink-dim-rgb)); }
+.workspace-actions button:hover:not(:disabled),
+.workspace-actions > a:hover { background: rgb(var(--y-surface-hover-rgb)); color: rgb(var(--y-ink-rgb)); }
+.workspace-actions-sep { width: 1px; height: 14px; background: rgb(var(--y-line-rgb) / var(--y-line-strong-alpha)); }
+
+/* ---- 2) Chat rhythm: one 16px beat between blocks, roomier cards ---- */
+
+.yagent-thread { display: flex; flex-direction: column; gap: 16px; }
+.yagent-thread > * { margin-block: 0; min-width: 0; }
+
+.yagent-outcome { padding: 15px 16px; }
+.yagent-outcome-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.yagent-outcome-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.yagent-outcome-icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 20px; height: 20px; }
+.yagent-status-label { flex-shrink: 0; white-space: nowrap; font-size: 11px; font-weight: 500; }
+
+.yagent-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--y-radius-sm);
+  border: 1px solid rgb(var(--y-line-rgb) / var(--y-line-alpha));
+  background: rgb(var(--y-surface-soft-rgb) / 0.6);
+  font-size: 12px;
+}
+.yagent-note--success {
+  border-color: rgb(var(--y-success-rgb) / 0.25);
+  background: rgb(var(--y-success-rgb) / var(--y-success-soft-alpha));
+}
+
+/* ---- 3) "Working" state: the loader shown while YAgent prepares work ---- */
+
+.yagent-working {
+  position: relative;
+  overflow: hidden;
+  border-color: rgb(var(--y-accent-rgb) / var(--y-accent-border-alpha));
+  background:
+    radial-gradient(120% 150% at 100% 0, rgb(var(--y-accent-rgb) / 0.1), transparent 62%),
+    rgb(var(--y-surface-soft-rgb) / 0.75);
+}
+/* Slow sheen sweeping across the card. */
+.yagent-working:after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 25%, rgb(var(--y-accent-rgb) / 0.08) 50%, transparent 75%);
+  transform: translateX(-70%);
+  animation: y-sheen 2.8s var(--y-ease) infinite;
+}
+
+/* Rotating accent arc with a breathing core — the active-step marker. */
+.yagent-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.yagent-ring:before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgb(var(--y-accent-rgb) / 0) 0deg,
+    rgb(var(--y-accent-rgb) / 0.15) 130deg,
+    rgb(var(--y-accent-rgb)) 330deg,
+    rgb(var(--y-accent-rgb) / 0) 360deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+  animation: y-spin 1.15s linear infinite;
+}
+.yagent-ring-dot {
+  width: 38%;
+  height: 38%;
+  border-radius: 50%;
+  background: rgb(var(--y-accent-rgb));
+  box-shadow: 0 0 0 3px rgb(var(--y-accent-rgb) / 0.16);
+  animation: y-breathe 2.4s var(--y-ease) infinite;
+}
+
+.yagent-working-line { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; line-height: 1.7; }
+.yagent-working-label { flex: none; font-weight: 500; color: rgb(var(--y-accent-rgb)); }
+.yagent-working-step { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgb(var(--y-ink-rgb)); }
+.yagent-working-bar { display: block; margin-top: 9px; }
+
+/* Indeterminate sweep for work whose length is not known yet. */
+.yagent-shimmer {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(var(--y-surface-hover-rgb));
+}
+.yagent-shimmer:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 36%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgb(var(--y-accent-rgb) / 0), rgb(var(--y-accent-rgb) / 0.85), rgb(var(--y-accent-rgb) / 0));
+  animation: y-slide 1.45s var(--y-ease) infinite;
+}
+
+@keyframes y-sheen {
+  0% { transform: translateX(-70%); }
+  100% { transform: translateX(70%); }
+}
+@keyframes y-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes y-breathe {
+  0%, 100% { transform: scale(0.86); opacity: 0.8; }
+  50% { transform: scale(1); opacity: 1; }
+}
+@keyframes y-slide {
+  0% { transform: translateX(115%); }
+  100% { transform: translateX(-290%); }
+}
+
+/* ---- 4) Narrow screens ---- */
+
+@media (max-width: 700px) {
+  .workspace-bar { gap: 8px; min-height: 54px; padding: 8px 10px; }
+  .workspace-field-label { display: none; }
+  .workspace-controls,
+  .workspace-actions { height: 32px; }
+  .workspace-field,
+  .workspace-switch { padding-inline: 7px; }
+  .workspace-connection { font-size: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yagent-working:after { display: none; }
+  .yagent-ring:before,
+  .yagent-ring-dot,
+  .yagent-shimmer:before { animation: none; }
+  .yagent-shimmer:before { width: 100%; transform: none; background: rgb(var(--y-accent-rgb) / 0.45); }
+}

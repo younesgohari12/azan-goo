@@ -1,6 +1,6 @@
 import { el, Fragment } from '../../native/dom.js';
 import { AlertTriangle, Check, Minus, Pause } from '../../icons.js';
-import { Spinner } from '../ui/feedback.js';
+import { WorkingRing } from '../ui/feedback.js';
 import { cn, fa } from '../../lib/utils.js';
 export const STEP_STATUS_META = {
     pending: { label: 'در انتظار', tone: 'neutral' },
@@ -35,7 +35,7 @@ export function StepStatusIcon({ status, index, className, }) {
                 el(Check, { className: "h-3 w-3", strokeWidth: 3 })));
         case 'active':
             return (el("span", { className: cn(base, className) },
-                el(Spinner, { size: 16 })));
+                el(WorkingRing, { size: 16 })));
         case 'waiting_approval':
             return (el("span", { className: cn(base, 'bg-y-warn-soft text-y-warn ring-1 ring-inset ring-y-warn/35', className) },
                 el(Pause, { className: "h-3 w-3", strokeWidth: 2.5 })));

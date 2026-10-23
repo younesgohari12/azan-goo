@@ -39,7 +39,7 @@ export function TaskPanel({ onCollapse }) {
                     },
                 ] })),
         el("div", { className: "yagent-scroll flex-1 px-3 py-3.5" }, tab === 'feedback' ? (el(FeedbackPanel, null)) : task ? (el("div", { className: "space-y-4" },
-            el("div", { className: "rounded-y-md border border-y-line bg-y-surface-soft/60 p-3" },
+            el("div", { className: cn('rounded-y-md border border-y-line bg-y-surface-soft/60 p-3 transition-[border-color,background-color] duration-y ease-y', live && 'yagent-working') },
                 el("div", { className: "flex items-start justify-between gap-2" },
                     el("div", { className: "min-w-0 flex-1" },
                         el("p", { className: "truncate text-y-base font-medium text-y-ink" }, task.title),

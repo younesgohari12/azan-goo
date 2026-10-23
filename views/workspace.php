@@ -24,6 +24,7 @@ ob_start();
     <link rel="stylesheet" href="<?php echo esc_url($base . 'css/fonts.css'); ?>">
     <link rel="stylesheet" href="<?php echo esc_url($base . 'css/app.css'); ?>?ver=<?php echo esc_attr(YAGENT_AI_VERSION); ?>">
     <link rel="stylesheet" href="<?php echo esc_url($base . 'css/workspace.css'); ?>?ver=<?php echo esc_attr(YAGENT_AI_VERSION); ?>">
+    <link rel="stylesheet" href="<?php echo esc_url($base . 'css/refinements.css'); ?>?ver=<?php echo esc_attr(YAGENT_AI_VERSION); ?>">
     <script>window.YAgentUI = <?php echo $boot; // JSON is HEX encoded above. ?>;</script>
 </head>
 <body>

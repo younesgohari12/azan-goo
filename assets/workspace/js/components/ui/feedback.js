@@ -13,3 +13,12 @@ export function ProgressBar({ percent, tone = 'accent', className }) {
     return (el("div", { className: cn('h-1 w-full overflow-hidden rounded-full bg-y-surface-hover', className) },
         el("div", { className: cn('h-full rounded-full transition-[width] duration-y-slow ease-y', tones[tone]), style: { width: `${Math.max(0, Math.min(100, percent))}%` } })));
 }
+/** Rotating accent arc with a breathing core: the active-step marker. */
+export function WorkingRing({ size = 18, className }) {
+    return (el("span", { role: "status", "aria-label": "در حال انجام", style: { width: size, height: size }, className: cn('yagent-ring', className) },
+        el("span", { className: "yagent-ring-dot" })));
+}
+/** Indeterminate sweep for work whose length is not known yet. */
+export function ShimmerBar({ className }) {
+    return el("span", { "aria-hidden": true, className: cn('yagent-shimmer', className) });
+}

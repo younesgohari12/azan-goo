@@ -25,7 +25,7 @@ export function MessageItem({ message }) {
     return message.role === 'user' ? el(UserMessage, { message: message }) : el(AssistantMessage, { message: message });
 }
 function UserMessage({ message }) {
-    return (el(motion.div, { initial: { opacity: 0, y: 4 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.18, ease: [0.22, 0.61, 0.36, 1] }, className: "flex justify-start py-1.5" },
+    return (el(motion.div, { initial: { opacity: 0, y: 4 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.18, ease: [0.22, 0.61, 0.36, 1] }, className: "flex justify-start" },
         el("div", { className: "max-w-[88%] rounded-y-lg rounded-ss-sm bg-y-surface px-3.5 py-2.5" },
             message.attachments?.length ? (el("div", { className: "mb-2 flex flex-wrap gap-2" }, message.attachments.map((attachment) => (el(AttachmentChip, { key: attachment.id, attachment: attachment, className: "bg-y-bg/40" }))))) : null,
             message.text ? (el("p", { className: "whitespace-pre-wrap break-words text-y-chat text-y-ink" }, message.text)) : null,
@@ -46,7 +46,7 @@ function AssistantMessage({ message }) {
             setCopied(false);
         }
     }
-    return (el("div", { className: "group relative py-1.5" },
+    return (el("div", { className: "group relative" },
         el(MarkdownContent, { text: message.text ?? '' }),
         streaming ? (el("span", { className: "mt-1 inline-block h-4 w-[2px] translate-y-0.5 animate-y-blink bg-y-accent", "aria-hidden": true })) : null,
         message.status === 'stopped' ? (el("p", { className: "mt-2 flex items-center gap-1.5 text-y-xs text-y-ink-dim" },
@@ -68,7 +68,7 @@ function FeedbackMessageCard({ message }) {
     const annotations = (message.annotationIds ?? [])
         .map((id) => state.annotations[id])
         .filter((annotation) => Boolean(annotation));
-    return (el(motion.div, { initial: { opacity: 0, y: 4 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.18, ease: [0.22, 0.61, 0.36, 1] }, className: "flex justify-start py-1.5" },
+    return (el(motion.div, { initial: { opacity: 0, y: 4 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.18, ease: [0.22, 0.61, 0.36, 1] }, className: "flex justify-start" },
         el("div", { className: "max-w-[92%] rounded-y-lg rounded-ss-sm bg-y-surface p-3" },
             el("div", { className: "flex items-center gap-2 text-y-xs text-y-accent" },
                 el(MessageSquareWarning, { className: "h-3.5 w-3.5" }),

@@ -28,7 +28,7 @@ export function ResultCard({ resultId }) {
     const hasPreview = Boolean(previewRevisionId && previewPageId);
     const hasLink = Boolean(result.link);
     const demoLink = hasLink && (result.link === '#' || result.link?.startsWith('#'));
-    return (el("div", { className: cn('yagent-outcome my-4 rounded-y-lg border p-3.5', success ? 'yagent-outcome--success border-y-line bg-y-surface-soft/60' : 'border-y-danger/25 bg-y-danger-soft/20') },
+    return (el("div", { className: cn('yagent-outcome rounded-y-lg border', success ? 'yagent-outcome--success border-y-line bg-y-surface-soft/60' : 'border-y-danger/25 bg-y-danger-soft/20') },
         el("div", { className: "flex items-start gap-2.5" },
             el("span", { className: cn('yagent-outcome-icon', success ? 'text-y-success' : 'text-y-danger') }, success ? el(Check, { className: "h-3.5 w-3.5", strokeWidth: 3 }) : el(AlertTriangle, { className: "h-3.5 w-3.5" })),
             el("div", { className: "min-w-0 flex-1" },

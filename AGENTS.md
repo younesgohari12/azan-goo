@@ -24,15 +24,18 @@ editing a source file, reload the preview to see the change.
 
 ## Packaged download
 
-The complete plugin source can be rebuilt from the committed tree (tracked files
-only — the sandbox host page, compose file and AGENTS.md stay out of the package):
+`.base44/build-zip.sh` writes `.base44/download/yagent-ai.zip`, served at
+`/yagent-ai.zip`. It packages the **working tree**, so uncommitted edits ship
+too, and it leaves the sandbox-only files out (`.base44/`, `AGENTS.md`,
+`docker-compose.base44.yml`, `.gitignore`) — the tree inside the zip is exactly
+what WordPress installs under `wp-content/plugins/yagent-ai/`.
 
 ```sh
-mkdir -p .base44/download
-git archive --prefix=yagent-ai/ --format=zip -o .base44/download/yagent-ai.zip HEAD
+.base44/build-zip.sh
 ```
 
 `.base44/download/` is gitignored, so the binary never lands in the repository.
+Rebuild the zip after any source change, or the download link serves stale code.
 
 ## Verification
 

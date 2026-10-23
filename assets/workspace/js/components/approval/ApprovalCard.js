@@ -41,7 +41,7 @@ export function ApprovalCard({ approvalId }) {
         setLocked(true);
         try { await actions.resolveApproval(approvalId, decision); } finally { setLocked(false); }
     }
-    return (el("div", { className: cn('my-3 rounded-y-lg border p-4', isPending ? 'border-y-warn/25 bg-y-warn-soft/25' : 'border-y-line bg-y-surface-soft/60') },
+    return (el("div", { className: cn('rounded-y-lg border p-4', isPending ? 'border-y-warn/25 bg-y-warn-soft/25' : 'border-y-line bg-y-surface-soft/60') },
         el("div", { className: "flex items-start gap-2.5" },
             el("span", { className: cn('mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-y-sm', isPending ? 'bg-y-warn/15 text-y-warn' : 'bg-y-surface text-y-ink-muted') }, KIND_ICON[approval.kind]),
             el("div", { className: "min-w-0 flex-1" },
