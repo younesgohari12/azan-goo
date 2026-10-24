@@ -1,0 +1,1268 @@
+/* ============================================================
+   J.A.R.V.I.S — design tokens & base
+   ============================================================ */
+:root {
+  --bg-0: #030712;
+  --bg-1: #080f1e;
+  --cyan: #00d9ff;
+  --blue: #138bff;
+  --aqua: #39ffe1;
+  --text: #eafbff;
+  --muted: rgba(122, 154, 180, 0.78);
+  --amber: #ffb454;
+  --red: #ff6473;
+  --line: rgba(0, 217, 255, 0.16);
+  --line-strong: rgba(0, 217, 255, 0.42);
+  --panel: rgba(8, 15, 30, 0.55);
+  --font-display: 'Orbitron', sans-serif;
+  --font-ui: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-fa: 'Vazirmatn', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ============================================================
+   Shared screen chrome
+   ============================================================ */
+.boot-screen,
+.main-screen {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(1100px 760px at 50% 40%, var(--bg-1), var(--bg-0) 78%);
+  transition: opacity 0.65s ease;
+}
+
+.boot-screen.leaving,
+.main-screen.leaving {
+  opacity: 0;
+}
+
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 217, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 255, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 72% 62% at 50% 44%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse 72% 62% at 50% 44%, #000 30%, transparent 78%);
+}
+
+.bg-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 58% 46% at 50% 42%, rgba(0, 217, 255, 0.06), transparent 70%),
+    radial-gradient(ellipse at 50% 50%, transparent 42%, rgba(3, 7, 18, 0.82) 100%);
+}
+
+/* ============================================================
+   Boot stage layout
+   ============================================================ */
+.stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 250px;
+  align-items: center;
+  padding: 0 3.4vw;
+  gap: 1.6vw;
+}
+
+.core-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transform: translate3d(calc(var(--mx, 0) * 10px), calc(var(--my, 0) * 8px), 0);
+  transition: transform 0.7s ease;
+}
+
+/* diagnostics: lift the core so the panel below doesn't overlap the label */
+.phase-diagnostics .core-column,
+.phase-online .core-column {
+  transform: translateY(-9vh) translate3d(calc(var(--mx, 0) * 10px), calc(var(--my, 0) * 8px), 0);
+}
+
+.phase-diagnostics .reactor {
+  width: min(50vmin, 500px);
+  height: min(50vmin, 500px);
+}
+
+.core-label {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.9s ease 0.35s, transform 0.9s ease 0.35s;
+}
+
+.phase-activation .core-label {
+  opacity: 0;
+  transition: none;
+}
+
+.phase-bootstrap .core-label,
+.phase-diagnostics .core-label,
+.phase-online .core-label,
+.phase-handoff .core-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(30px, 5vmin, 58px);
+  letter-spacing: 0.32em;
+  padding-left: 0.32em; /* recenter tracked text */
+  color: var(--text);
+  text-shadow: 0 0 26px rgba(0, 217, 255, 0.35), 0 0 4px rgba(0, 217, 255, 0.4);
+}
+
+.tagline {
+  margin-top: 6px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: clamp(10px, 1.5vmin, 15px);
+  letter-spacing: 0.52em;
+  padding-left: 0.52em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ============================================================
+   Reactor core (SVG)
+   ============================================================ */
+.reactor {
+  width: min(58vmin, 580px);
+  height: min(58vmin, 580px);
+  filter: drop-shadow(0 0 34px rgba(0, 217, 255, 0.14));
+}
+
+.reactor.compact {
+  width: min(42vmin, 350px);
+  height: min(42vmin, 350px);
+}
+
+.spin,
+.spin-rev {
+  transform-origin: 300px 300px;
+  will-change: transform;
+}
+
+.spin {
+  animation: spin-rot var(--d, 18s) linear infinite;
+}
+
+.spin-rev {
+  animation: spin-rot var(--d, 18s) linear infinite reverse;
+}
+
+.spin-varied {
+  transform-origin: 300px 300px;
+  animation: spin-varied 16s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes spin-rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* eased segments — reads as acceleration / deceleration */
+@keyframes spin-varied {
+  0% {
+    transform: rotate(0deg);
+  }
+  22% {
+    transform: rotate(86deg);
+  }
+  46% {
+    transform: rotate(198deg);
+  }
+  72% {
+    transform: rotate(256deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-slowest {
+  --d: 46s;
+}
+.spin-slow {
+  --d: 30s;
+}
+.spin-med {
+  --d: 19s;
+}
+.spin-fast {
+  --d: 12s;
+}
+.spin-beam {
+  --d: 7.5s;
+}
+
+.reactor.idle .spin-slowest {
+  --d: 110s;
+}
+.reactor.idle .spin-slow {
+  --d: 70s;
+}
+.reactor.idle .spin-med {
+  --d: 44s;
+}
+.reactor.idle .spin-fast {
+  --d: 28s;
+}
+.reactor.idle .spin-beam {
+  --d: 22s;
+}
+.reactor.idle .spin-varied {
+  animation-duration: 44s;
+}
+
+/* handoff: rings slow down & breathe */
+.phase-handoff .reactor:not(.idle) .spin,
+.phase-handoff .reactor:not(.idle) .spin-rev {
+  animation-play-state: running;
+}
+.phase-handoff .core-column .reactor {
+  transition: filter 1.2s ease;
+  filter: drop-shadow(0 0 22px rgba(0, 217, 255, 0.1));
+}
+
+/* center core */
+.core-halo {
+  opacity: 0.55;
+  animation: core-breathe 5.5s ease-in-out infinite;
+}
+
+.core-glow {
+  animation: core-breathe 3.6s ease-in-out infinite;
+}
+
+.reactor.bright .core-halo {
+  opacity: 0.95;
+}
+
+.reactor.bright .core-glow {
+  filter: url(#core-soft) brightness(1.35);
+}
+
+.core-dot {
+  animation: core-flicker 2.8s ease-in-out infinite;
+}
+
+@keyframes core-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes core-flicker {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* energy waves */
+.energy-wave {
+  transform-origin: 300px 300px;
+  animation: wave-breathe 6s ease-in-out infinite;
+  opacity: 0.22;
+}
+
+.energy-wave.w2 {
+  animation-delay: 1.6s;
+}
+
+@keyframes wave-breathe {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.03);
+  }
+}
+
+/* pulse ring — phase 4 */
+.pulse-ring {
+  transform-origin: 300px 300px;
+  opacity: 0;
+}
+
+.reactor.bright .pulse-ring {
+  animation: pulse-expand 1.5s cubic-bezier(0.2, 0.7, 0.3, 1) infinite;
+}
+
+@keyframes pulse-expand {
+  0% {
+    transform: scale(0.18);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(4.6);
+    opacity: 0;
+  }
+}
+
+/* data nodes & neural links */
+.data-node {
+  animation: node-flicker 2.6s ease-in-out infinite;
+}
+
+@keyframes node-flicker {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.neural-line {
+  stroke-dasharray: 3 9;
+  animation: dash-flow 3.2s linear infinite;
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+/* ============================================================
+   Phase 1 — activation overlay
+   ============================================================ */
+.activation-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  background: var(--bg-0);
+  transition: opacity 0.9s ease 0.25s;
+}
+
+.phase-bootstrap .activation-overlay,
+.phase-diagnostics .activation-overlay,
+.phase-online .activation-overlay,
+.phase-handoff .activation-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scan-beam-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan) 18%, var(--aqua) 50%, var(--cyan) 82%, transparent);
+  box-shadow: 0 0 22px 5px rgba(0, 217, 255, 0.45);
+  animation: beam-sweep 1.7s cubic-bezier(0.6, 0, 0.4, 1) 2 both;
+}
+
+@keyframes beam-sweep {
+  0% {
+    top: -2%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 101%;
+    opacity: 0;
+  }
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--aqua);
+  box-shadow: 0 0 8px 1px rgba(57, 255, 225, 0.7);
+  opacity: 0;
+  animation: particle-in 1.4s ease-out forwards;
+}
+
+@keyframes particle-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  55% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+
+.activation-letters {
+  display: flex;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(34px, 6vmin, 68px);
+  letter-spacing: 0.3em;
+  color: var(--text);
+  text-shadow: 0 0 30px rgba(0, 217, 255, 0.45);
+}
+
+.activation-letters span {
+  opacity: 0;
+  animation: letter-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes letter-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  70% {
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.activation-sub {
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.6vmin, 15px);
+  letter-spacing: 0.44em;
+  color: var(--cyan);
+  opacity: 0;
+  animation: sub-reveal 1s steps(14) 1.15s forwards, glitch-shift 2.6s steps(2) 2.15s 2;
+  clip-path: inset(0 100% 0 0);
+  padding-left: 0.44em;
+}
+
+@keyframes sub-reveal {
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes glitch-shift {
+  0%,
+  100% {
+    text-shadow: 0 0 12px rgba(0, 217, 255, 0.4);
+    transform: translateX(0);
+  }
+  50% {
+    text-shadow: -3px 0 rgba(57, 255, 225, 0.6), 3px 0 rgba(19, 139, 255, 0.6);
+    transform: translateX(2px);
+  }
+}
+
+/* ============================================================
+   HUD side panels
+   ============================================================ */
+.hud-side {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  opacity: 0;
+}
+
+.phase-bootstrap .hud-side,
+.phase-diagnostics .hud-side,
+.phase-online .hud-side {
+  opacity: 1;
+}
+
+.phase-bootstrap .hud-left {
+  animation: hud-in-left 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.25s both;
+}
+
+.phase-bootstrap .hud-right {
+  animation: hud-in-right 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s both;
+}
+
+.phase-handoff .hud-left {
+  animation: hud-out-left 0.7s ease 0.1s both;
+}
+
+.phase-handoff .hud-right {
+  animation: hud-out-right 0.7s ease 0.1s both;
+}
+
+.phase-online .hud-side {
+  opacity: 0.35;
+  transition: opacity 0.8s ease;
+}
+
+@keyframes hud-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes hud-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes hud-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes hud-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+.hud-left,
+.hud-right {
+  transform: translate3d(calc(var(--mx, 0) * -14px), calc(var(--my, 0) * -8px), 0);
+}
+
+.stage > .hud-left {
+  grid-column: 1;
+}
+
+.stage > .hud-right {
+  grid-column: 3;
+}
+
+.hud-card {
+  position: relative;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 12px 14px 14px;
+}
+
+.hud-card::before,
+.hud-card::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--line-strong);
+}
+
+.hud-card::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.hud-card::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
+
+.hud-card h3 {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.wave-canvas {
+  display: block;
+  width: 100%;
+  height: 56px;
+}
+
+.gauge {
+  display: block;
+  width: 86px;
+  height: 86px;
+  margin: 0 auto;
+}
+
+.gauge-track {
+  fill: none;
+  stroke: rgba(0, 217, 255, 0.14);
+  stroke-width: 5;
+}
+
+.gauge-arc {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 6px rgba(0, 217, 255, 0.6));
+  animation: gauge-fill 2.4s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+}
+
+@keyframes gauge-fill {
+  from {
+    stroke-dashoffset: var(--dash-full);
+  }
+  to {
+    stroke-dashoffset: var(--target);
+  }
+}
+
+.gauge-readout {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+}
+
+.gauge-readout span:last-child {
+  color: var(--muted);
+}
+
+.tele-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+}
+
+.tele-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+}
+
+.tele-row b {
+  font-weight: 400;
+  color: var(--text);
+}
+
+.coord-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--aqua);
+  letter-spacing: 0.12em;
+}
+
+.coord-lines .coord-sub {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.mini-diagram {
+  display: block;
+  width: 100%;
+  height: 92px;
+}
+
+.status-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+.status-rows b {
+  font-weight: 400;
+  color: var(--aqua);
+}
+
+/* connector lines toward the core */
+.hud-side::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 3.2vw;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line-strong), transparent);
+}
+
+.hud-left::after {
+  right: -3.2vw;
+}
+
+.hud-right::after {
+  left: -3.2vw;
+  background: linear-gradient(270deg, var(--line-strong), transparent);
+}
+
+/* ============================================================
+   Bootstrap message ticker
+   ============================================================ */
+.boot-message {
+  margin-top: 14px;
+  height: 20px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.3em;
+  color: var(--cyan);
+  animation: msg-in 0.45s ease both;
+}
+
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* ============================================================
+   Diagnostics panel
+   ============================================================ */
+.diag-panel {
+  position: absolute;
+  bottom: 58px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(780px, 82vw);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  backdrop-filter: blur(3px);
+  padding: 14px 18px 16px;
+  z-index: 20;
+  animation: diag-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes diag-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.phase-online .diag-panel {
+  animation: none; /* the forwards-fill of diag-in would otherwise pin opacity: 1 */
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+}
+
+.diag-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.diag-head h2 {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: var(--muted);
+}
+
+.sim-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: var(--amber);
+  border: 1px solid rgba(255, 180, 84, 0.35);
+  padding: 3px 8px;
+}
+
+.diag-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 34px;
+  row-gap: 9px;
+}
+
+.diag-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  animation: row-in 0.5s ease both;
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.diag-index {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.diag-label {
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.diag-status {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+}
+
+.diag-status.s-init {
+  color: var(--cyan);
+  animation: init-blink 0.9s ease-in-out infinite;
+}
+
+@keyframes init-blink {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.diag-status.s-ready {
+  color: var(--aqua);
+}
+
+.diag-status.s-disconnected {
+  color: var(--amber);
+}
+
+.diag-status.s-unavailable {
+  color: var(--red);
+}
+
+.diag-status.s-error {
+  color: var(--red);
+}
+
+.diag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.diag-dot.s-ready {
+  color: var(--aqua);
+}
+.diag-dot.s-init {
+  color: var(--cyan);
+}
+.diag-dot.s-disconnected {
+  color: var(--amber);
+}
+.diag-dot.s-unavailable,
+.diag-dot.s-error {
+  color: var(--red);
+}
+
+/* ============================================================
+   Phase 4 — online banner
+   ============================================================ */
+.online-banner {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(3, 7, 18, 0.78), rgba(3, 7, 18, 0.55) 60%, transparent 90%);
+  animation: banner-in 1s ease both;
+  pointer-events: none;
+}
+
+@keyframes banner-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.online-banner.fade-out {
+  opacity: 0;
+  transition: opacity 0.55s ease;
+}
+
+.online-line1 {
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.7vmin, 15px);
+  letter-spacing: 0.5em;
+  padding-left: 0.5em;
+  color: var(--muted);
+  animation: letter-in 0.8s ease 0.15s both;
+}
+
+.online-line2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(26px, 4.6vmin, 52px);
+  letter-spacing: 0.3em;
+  padding-left: 0.3em;
+  color: var(--cyan);
+  text-shadow: 0 0 42px rgba(0, 217, 255, 0.55), 0 0 6px rgba(0, 217, 255, 0.6);
+  animation: letter-in 0.9s ease 0.4s both;
+}
+
+.online-fa {
+  font-family: var(--font-fa);
+  direction: rtl;
+  font-size: clamp(15px, 2.3vmin, 24px);
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0;
+  animation: fa-in 1s ease 0.9s forwards;
+}
+
+@keyframes fa-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 0.92;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   Progress meter & system controls
+   ============================================================ */
+.progress-meter {
+  position: absolute;
+  bottom: 20px;
+  left: 28px;
+  z-index: 45;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.progress-track {
+  height: 2px;
+  background: rgba(0, 217, 255, 0.12);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--cyan), var(--aqua));
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.6);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.progress-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--muted);
+}
+
+.system-controls {
+  position: absolute;
+  top: 22px;
+  right: 26px;
+  z-index: 50;
+  display: flex;
+  gap: 8px;
+}
+
+.ctl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  background: rgba(8, 15, 30, 0.5);
+  padding: 7px 12px;
+  transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ctl:hover {
+  color: var(--cyan);
+  border-color: var(--line-strong);
+  box-shadow: 0 0 14px rgba(0, 217, 255, 0.18);
+}
+
+.ctl.ctl-skip {
+  color: var(--cyan);
+  border-color: var(--line-strong);
+}
+
+/* ============================================================
+   Main screen (post-boot)
+   ============================================================ */
+.main-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  animation: main-in 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes main-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.main-wordmark {
+  font-size: clamp(24px, 4vmin, 44px);
+}
+
+.main-wordmark .ready {
+  color: var(--cyan);
+  letter-spacing: 0.18em;
+  padding-left: 0;
+  font-size: 0.62em;
+  vertical-align: middle;
+}
+
+.module-chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 900px;
+  margin-top: 6px;
+}
+
+.module-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  background: rgba(8, 15, 30, 0.5);
+  padding: 6px 11px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  animation: chip-in 0.6s ease both;
+}
+
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 7px currentColor;
+}
+
+.chip-dot.s-ready {
+  color: var(--aqua);
+}
+.chip-dot.s-disconnected {
+  color: var(--amber);
+}
+.chip-dot.s-unavailable,
+.chip-dot.s-error {
+  color: var(--red);
+}
+
+.chip-sim {
+  color: var(--amber);
+  font-size: 8px;
+}
+
+/* ============================================================
+   Reduced motion — everything settles to gentle fades
+   ============================================================ */
+.boot-screen.reduced .spin,
+.boot-screen.reduced .spin-rev,
+.boot-screen.reduced .spin-varied,
+.boot-screen.reduced .pulse-ring,
+.boot-screen.reduced .energy-wave,
+.boot-screen.reduced .core-halo,
+.boot-screen.reduced .core-glow,
+.boot-screen.reduced .core-dot,
+.boot-screen.reduced .data-node,
+.boot-screen.reduced .neural-line,
+.boot-screen.reduced .gauge-arc,
+.main-screen.reduced .spin,
+.main-screen.reduced .spin-rev,
+.main-screen.reduced .spin-varied,
+.main-screen.reduced .energy-wave,
+.main-screen.reduced .core-halo,
+.main-screen.reduced .core-glow {
+  animation: none !important;
+}
+
+.boot-screen.reduced .scan-beam-line,
+.boot-screen.reduced .glitch-layer {
+  display: none;
+}
+
+.boot-screen.reduced .core-glow {
+  opacity: 0.85;
+}
+
+/* OS-level accessibility preference — belt and braces */
+@media (prefers-reduced-motion: reduce) {
+  .spin,
+  .spin-rev,
+  .spin-varied,
+  .pulse-ring,
+  .energy-wave {
+    animation-duration: 0.01s;
+    animation-iteration-count: 1;
+  }
+}
+
+/* ============================================================
+   Responsive — adapt to 1366x768 and below
+   ============================================================ */
+@media (max-width: 1180px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hud-side {
+    display: none;
+  }
+}
+
+@media (max-height: 820px) {
+  .reactor {
+    width: min(52vmin, 460px);
+    height: min(52vmin, 460px);
+  }
+  .wordmark {
+    font-size: clamp(26px, 4.4vmin, 44px);
+  }
+  .diag-panel {
+    bottom: 46px;
+    padding: 12px 16px 13px;
+  }
+}

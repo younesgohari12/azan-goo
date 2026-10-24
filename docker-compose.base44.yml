@@ -1,0 +1,28 @@
+# Base44 sandbox setup — J.A.R.V.I.S boot experience (pure frontend, Vite dev server)
+# The app runs from cloned source with live reload; dependencies install at container start.
+services:
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ${BASE44_PROJECT_ROOT:-.}:/app
+    ports:
+      - "3000:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=1
+      - BASE44_PREVIEW_MODE
+      - BASE44_SANDBOX_HOST_DOMAIN
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
+    command: >
+      sh -ec "CI=true npm ci --no-audit --no-fund && exec npm run dev"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:5173/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: on-failure
+    labels:
+      base44.project: "J.A.R.V.I.S Boot"
+      base44.kind: "web"
+      base44.port: "3000"
