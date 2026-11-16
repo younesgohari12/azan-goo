@@ -1,0 +1,232 @@
+@import '@fontsource/vazirmatn/400.css';
+@import '@fontsource/vazirmatn/500.css';
+@import '@fontsource/vazirmatn/600.css';
+@import '@fontsource/vazirmatn/700.css';
+@import '@fontsource/vazirmatn/800.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Design tokens — single source of truth for color, radius and elevation.
+   Change these to re-skin the whole dashboard.
+--------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    /* Neutral surfaces */
+    --background: 210 40% 98%; /* #F8FAFC */
+    --foreground: 222 47% 11%; /* #0F172A */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 0 84% 60%;
+
+    /* Brand */
+    --primary: 0 84% 60%; /* #EF4444 coral red */
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 0 86% 96%;
+
+    /* Signals */
+    --success: 142 71% 42%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 142 60% 94%;
+    --warning: 32 95% 48%;
+    --warning-foreground: 30 100% 98%;
+    --warning-soft: 38 100% 94%;
+    --danger: 0 72% 51%;
+    --danger-foreground: 0 0% 100%;
+    --danger-soft: 0 86% 96%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+    --info-soft: 214 95% 96%;
+
+    /* Sidebar */
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 215 25% 35%;
+    --sidebar-hover: 210 40% 96%;
+    --sidebar-active: 0 86% 96%;
+
+    /* Charts */
+    --chart-1: 0 84% 60%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 142 71% 45%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 262 83% 65%;
+
+    /* Radii */
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 24px;
+
+    /* Elevation */
+    --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+    --shadow-pop: 0 12px 32px -8px rgb(15 23 42 / 0.18), 0 2px 8px -2px rgb(15 23 42 / 0.08);
+
+    color-scheme: light;
+  }
+
+  .dark {
+    --background: 222 47% 8%; /* #0B1120 */
+    --foreground: 213 31% 91%;
+    --card: 217 33% 13%; /* #151E2E */
+    --card-foreground: 213 31% 93%;
+    --muted: 217 30% 17%;
+    --muted-foreground: 215 20% 65%;
+    --border: 217 26% 22%;
+    --input: 217 26% 24%;
+    --ring: 0 84% 62%;
+
+    --primary: 0 84% 62%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 0 45% 20%;
+
+    --success: 142 62% 48%;
+    --success-soft: 148 45% 17%;
+    --warning: 38 92% 55%;
+    --warning-soft: 35 60% 18%;
+    --danger: 0 78% 62%;
+    --danger-soft: 0 45% 20%;
+    --info: 217 91% 68%;
+    --info-soft: 219 45% 22%;
+
+    --sidebar: 222 44% 7%;
+    --sidebar-foreground: 215 20% 72%;
+    --sidebar-hover: 217 30% 14%;
+    --sidebar-active: 0 45% 18%;
+
+    --chart-1: 0 84% 64%;
+    --chart-2: 217 91% 66%;
+    --chart-3: 142 62% 52%;
+    --chart-4: 38 92% 58%;
+    --chart-5: 262 83% 72%;
+
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-pop: 0 16px 40px -12px rgb(0 0 0 / 0.55);
+
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  /* Off-canvas drawers live outside the viewport; clip instead of creating a
+     horizontal scroll container so no sideways scroll appears on mobile. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: 'ss01' on;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Slim, theme-aware scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-xl border border-border bg-card shadow-card;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+
+  .focus-ring {
+    @apply outline-none ring-offset-2 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-muted;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--foreground) / 0.05),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
+  }
+
+  .table-sticky-head th {
+    @apply sticky top-0 z-10 bg-card;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .grid-lines {
+    background-image: radial-gradient(hsl(var(--border) / 0.7) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
