@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>اسنپ‌شاپ اتومیشن — پنل مدیریت</title>
+  <meta name="description" content="پنل مدیریت اتصال ووکامرس به اسنپ‌شاپ: محصولات، قیمت‌گذاری، موجودی، سفارش‌ها و اتوماسیون" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237C3AED'/%3E%3Cpath d='M9 12.5 16 8l7 4.5v7L16 24l-7-4.5v-7Z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/layout.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/pages.css" />
+  <script>
+    // Theme is applied before first paint to avoid a flash.
+    try {
+      var saved = localStorage.getItem('snapp.theme');
+      var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <div id="app">
+    <div class="boot" id="boot">
+      <div class="boot__spinner" aria-hidden="true"></div>
+      <div class="boot__text">در حال آماده‌سازی پنل…</div>
+    </div>
+  </div>
+
+  <div id="overlay-root"></div>
+  <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+  <script src="assets/vendor/lucide.min.js"></script>
+  <script type="module" src="assets/js/app.js"></script>
+  <style>
+    .boot {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+    .boot__spinner {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2.5px solid var(--border);
+      border-top-color: var(--brand);
+      animation: spin 0.8s linear infinite;
+    }
+  </style>
+</body>
+</html>

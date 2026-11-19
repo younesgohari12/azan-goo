@@ -1,0 +1,27 @@
+services:
+  web:
+    image: python:3.12-slim
+    working_dir: /site
+    command:
+      - sh
+      - -ec
+      - |
+        python3 scripts/build-zip.py
+        exec python3 -m http.server 3000 --bind 0.0.0.0 --directory /site
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app:/site
+    environment:
+      - BASE44_PREVIEW_MODE
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/index.html', timeout=3).read(64)"
+      interval: 15s
+      timeout: 4s
+      retries: 4
+      start_period: 8s
+    restart: on-failure
